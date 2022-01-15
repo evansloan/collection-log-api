@@ -1,0 +1,137 @@
+service: collection-log-api
+app: collection-log-api
+
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+
+  environment:
+    STAGE_NAME: ${self:provider.stage}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            - dynamodb:Query
+          Resource:
+            - Fn::GetAtt:
+                - CollectionLogTable
+                - Arn
+            - Fn::GetAtt:
+                - UserTable
+                - Arn
+
+functions:
+  createCollectionLog:
+    handler: src/handlers/collectionLog.create
+    events:
+      - httpApi:
+          path: /collectionlog
+          method: post
+
+  getCollectionLog:
+    handler: src/handlers/collectionLog.get
+    events:
+      - httpApi:
+          path: /collectionlog/{id}
+          method: get
+
+  getCollectionLogByRuneliteId:
+    handler: src/handlers/collectionLog.getByRuneliteId
+    events:
+      - httpApi:
+          path: /collectionlog/runelite/{runelite_id}
+          method: get
+
+  getCollectionLogByUsername:
+    handler: src/handlers/collectionLog.getByUsername
+    events:
+      - httpApi:
+          path: /collectionlog/user/{username}
+          method: get
+
+  updateCollectionLog:
+    handler: src/handlers/collectionLog.update
+    events:
+      - httpApi:
+          path: /collectionlog/{runelite_id}
+          method: put
+
+  createUser:
+    handler: src/handlers/user.create
+    events:
+      - httpApi:
+          path: /user
+          method: post
+  
+  getUser:
+    handler: src/handlers/user.get
+    events:
+      - httpApi:
+          path: /user/{id}
+          method: get
+
+  updateUser:
+    handler: src/handlers/user.update
+    events:
+      - httpApi:
+          path: /user/{id}
+          method: put
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-domain-manager
+ 
+custom:
+  dev:
+    domainName: dev.api.collectionlog.net
+
+  prod:
+    domainName: api.collectionlog.net
+
+  customDomain:
+    domainName: ${self:custom.${self:provider.stage}.domainName}
+    certificateName: api.collectionlog.net
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    apiType: http
+    endpointType: regional
+
+resources:
+  Resources:
+    CollectionLogTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CollectionLogTable-${self:provider.stage}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: collectionlog_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: collectionlog_id
+            KeyType: HASH
+
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable-${self:provider.stage}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
