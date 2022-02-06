@@ -77,15 +77,20 @@ export default class BaseTable {
    * @returns Item matching provided attributes or undefined
    */
   public async getByAttributes(attributes: any): Promise<AttributeMap | undefined> {
-    const params = {
+    let params: any = {
       TableName: this.tableName,
       ScanFilter: attributes,
       AttributesToGet: this.attributes,
     };
 
-    const results = await this.dynamoClient.scan(params).promise();
-    const items: Array<AttributeMap> = [];
-    results.Items?.forEach((item) => items.push(item));
+    let items: Array<AttributeMap> = [];
+    let results;
+    do {
+        results =  await this.dynamoClient.scan(params).promise();
+        results.Items?.forEach((item) => items.push(item));
+        params.ExclusiveStartKey = results.LastEvaluatedKey;
+    } while (typeof results.LastEvaluatedKey !== 'undefined');
+
 
     if (items.length < 1) {
       return undefined;
@@ -100,14 +105,21 @@ export default class BaseTable {
    * @param {any} attributes Attributes to search by 
    * @returns Array of items matching attributes or null undefined
    */
-  public async getAllByAttributes(attributes: any): Promise<ItemList | undefined> {
-    const params = {
+  public async getAllByAttributes(attributes: any): Promise<Array<AttributeMap> | undefined> {
+    const params: any = {
       TableName: this.tableName,
       ScanFilter: attributes,
       AttributesToGet: this.attributes,
     };
 
-    const results = await this.dynamoClient.scan(params).promise();
-    return results.Items;
+    let items: Array<AttributeMap> = [];
+    let results;
+    do {
+        results =  await this.dynamoClient.scan(params).promise();
+        results.Items?.forEach((item) => items.push(item));
+        params.ExclusiveStartKey = results.LastEvaluatedKey;
+    } while (typeof results.LastEvaluatedKey !== 'undefined');
+
+    return items;
   }
 }
