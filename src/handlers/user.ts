@@ -1,7 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
+import db from '../services/DatabaseService';
 import UserTable from '../tables/UserTable';
-
+import User from '../models/User';
 
 const headers = {
   'content-type': 'application/json',
@@ -68,5 +69,22 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     statusCode: 200,
     headers,
     body: JSON.stringify(user),
+  };
+};
+
+export const placeholder = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  let message = 'Database connected';
+
+  try {
+    await db.authenticate();
+    const users = await User.findAll();
+  } catch (error) {
+    message = `Unable to connect to database ${error}`;
+  }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(message),
   };
 };
