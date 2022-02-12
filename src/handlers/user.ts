@@ -77,14 +77,15 @@ export const placeholder = async (event: APIGatewayProxyEvent): Promise<APIGatew
 
   try {
     await db.authenticate();
-    const users = await User.findAll();
+    const user = await User.findAll();
+    message = JSON.stringify(user);
   } catch (error) {
-    message = `Unable to connect to database ${error}`;
+    message = JSON.stringify(`Unable to connect to database ${error}`);
   }
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(message),
+    body: message,
   };
 };

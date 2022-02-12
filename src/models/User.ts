@@ -3,30 +3,41 @@ import {
   Column,
   DataType,
   Default,
-  ForeignKey,
+  DefaultScope,
   HasOne,
   Model,
   PrimaryKey,
-  Table
+  Table,
 } from 'sequelize-typescript';
 
 import CollectionLog from './CollectionLog';
 
-
-@Table
+@DefaultScope(() => ({
+  attributes: [
+    'id',
+    'username',
+    'created_at',
+    'updated_at',
+  ]
+}))
+@Table({
+  tableName: 'users',
+  underscored: true,
+  paranoid: true,
+})
 class User extends Model {
 
   @PrimaryKey
-  @Column(DataType.UUID)
   @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
   id!: string;
 
-  @Column
   @AllowNull(false)
+  @Column
   username!: string;
 
   @Column
-  runelite_id?: string;
+  runeliteId?: string;
 
   @HasOne(() => CollectionLog)
   collectionLog?: CollectionLog;

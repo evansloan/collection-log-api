@@ -13,17 +13,21 @@ import {
 import CollectionLogDetail from './CollectionLogDetail';
 import User from './User';
 
-@Table
+@Table({
+  tableName: 'collection_log',
+  underscored: true,
+  paranoid: true,
+})
 class CollectionLog extends Model {
 
   @PrimaryKey
-  @Column(DataType.UUID)
   @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
   id!: string;
 
   @ForeignKey(() => User)
   @Column(DataType.UUID)
-  user_id!: string;
+  userId!: string;
 
   @BelongsTo(() => User)
   user!: User;

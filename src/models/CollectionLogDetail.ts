@@ -6,21 +6,26 @@ import {
   ForeignKey,
   Model,
   PrimaryKey,
-  Table
+  Table,
 } from 'sequelize-typescript';
 
 import CollectionLog from './CollectionLog';
 
-@Table
+@Table({
+  tableName: 'collection_log_detail',
+  underscored: true,
+  paranoid: true,
+})
 class CollectionLogDetail extends Model {
+
   @PrimaryKey
-  @Column(DataType.UUID)
   @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
   id!: string;
 
   @ForeignKey(() => CollectionLog)
   @Column(DataType.UUID)
-  collection_log_id!: string;
+  collectionLogId!: string;
 
   @Column
   tab!: string;
@@ -34,12 +39,12 @@ class CollectionLogDetail extends Model {
   @Column(DataType.NUMBER.UNSIGNED)
   itemId!: number;
 
-  @Column(DataType.NUMBER.UNSIGNED)
   @Default(0)
+  @Column(DataType.NUMBER.UNSIGNED)
   quantity!: number;
 
-  @Column
   @Default(false)
+  @Column
   obtained!: boolean;
 
   @BelongsTo(() => CollectionLog)
