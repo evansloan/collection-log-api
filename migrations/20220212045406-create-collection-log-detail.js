@@ -8,7 +8,7 @@ module.exports = {
         defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
-      collection_log_idd: {
+      collection_log_id: {
         type: Sequelize.DataTypes.UUID,
         references: {
           model: {
