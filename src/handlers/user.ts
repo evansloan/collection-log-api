@@ -1,8 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-import db from '../services/DatabaseService';
-import UserTable from '../tables/UserTable';
 import User from '../models/User';
+import db from '../services/DatabaseService';
 
 const headers = {
   'content-type': 'application/json',
@@ -12,8 +11,21 @@ const headers = {
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body as string);
 
-  const userTable = new UserTable();
-  const existingUser = await userTable.getByRuneliteId(body.runelite_id);
+  try {
+    await db.authenticate();
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify(`Unabled to establish database connection: ${error}`),
+    }
+  }
+
+  const existingUser = await User.findOne({
+    where: { 
+      runeliteId: body.runelite_id 
+    }
+  });
 
   if (existingUser) {
     return {
@@ -23,8 +35,11 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  body.username = body.username.toLowerCase();
-  const user = await new UserTable().create(body);
+  const user = await User.create({
+    username: body.username.toLowerCase(),
+    runeliteId: body.runelite_id,
+  });
+
   return {
     statusCode: 201,
     headers,
@@ -34,7 +49,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const id = event.pathParameters?.id as string;
-  const user = await new UserTable().get(id);
+  const user = await User.findByPk(id);
 
   if (!user) {
     return {
@@ -55,37 +70,21 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const id = event.pathParameters?.id as string;
   const body = JSON.parse(event.body as string);
 
-  const user = await new UserTable().update(id, body);
+  const user = await User.update({ username: body.username }, {
+    where: { id: id }
+  });
 
   if (!user) {
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: `User not found with ID: ${id}` }),
+      body: JSON.stringify({ updated: false }),
     };
   }
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(user),
-  };
-};
-
-export const placeholder = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  let message = 'Database connected';
-
-  try {
-    await db.authenticate();
-    const user = await User.findAll();
-    message = JSON.stringify(user);
-  } catch (error) {
-    message = JSON.stringify(`Unable to connect to database ${error}`);
-  }
-
-  return {
-    statusCode: 200,
-    headers,
-    body: message,
+    body: JSON.stringify({ updated: true }),
   };
 };

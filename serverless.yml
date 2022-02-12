@@ -104,13 +104,6 @@ functions:
           path: /user/{id}
           method: put
 
-  placeholder:
-    handler: src/handlers/user.placeholder
-    events:
-      - httpApi:
-          path: /dbtest
-          method: get
-
 plugins:
   - serverless-plugin-typescript
   - serverless-domain-manager
