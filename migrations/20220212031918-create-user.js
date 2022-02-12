@@ -19,6 +19,9 @@ module.exports = {
       },
       updated_at: {
         type: Sequelize.DataTypes.DATE
+      },
+      deleted_at: {
+        type: Sequelize.DataTypes.DATE
       }
     });
   },

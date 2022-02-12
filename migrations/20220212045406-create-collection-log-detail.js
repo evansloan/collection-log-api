@@ -30,7 +30,7 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
         allowNull: false,
       },
-      itemId: {
+      item_id: {
         type: Sequelize.DataTypes.INTEGER,
         allowNull: false,
       },
@@ -46,6 +46,9 @@ module.exports = {
         type: Sequelize.DataTypes.DATE
       },
       updated_at: {
+        type: Sequelize.DataTypes.DATE
+      },
+      deleted_at: {
         type: Sequelize.DataTypes.DATE
       }
     });
