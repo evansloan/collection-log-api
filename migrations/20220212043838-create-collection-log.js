@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.createTable('collection_log', {
       id: {
         type: Sequelize.DataTypes.UUID,
-        defaultValue: Sequelize.DataTypes.UUID4,
+        defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
       userId: {
@@ -13,7 +13,6 @@ module.exports = {
         references: {
           model: {
             tableName: 'users',
-            schema: 'schema'
           },
           key: 'id'
         },

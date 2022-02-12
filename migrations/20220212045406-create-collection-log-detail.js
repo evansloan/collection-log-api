@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.createTable('collection_log_detail', {
       id: {
         type: Sequelize.DataTypes.UUID,
-        defaultValue: Sequelize.DataTypes.UUID4,
+        defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
       collectionLogId: {
