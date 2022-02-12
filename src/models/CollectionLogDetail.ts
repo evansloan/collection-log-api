@@ -20,7 +20,7 @@ class CollectionLogDetail extends Model {
 
   @ForeignKey(() => CollectionLog)
   @Column(DataType.UUID)
-  collectionLogId!: string;
+  collection_log_id!: string;
 
   @Column
   tab!: string;

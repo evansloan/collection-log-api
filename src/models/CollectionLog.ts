@@ -23,7 +23,7 @@ class CollectionLog extends Model {
 
   @ForeignKey(() => User)
   @Column(DataType.UUID)
-  userId!: string;
+  user_id!: string;
 
   @BelongsTo(() => User)
   user!: User;

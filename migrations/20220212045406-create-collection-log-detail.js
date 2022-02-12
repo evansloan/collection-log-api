@@ -8,7 +8,7 @@ module.exports = {
         defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
-      collectionLogId: {
+      collection_log_idd: {
         type: Sequelize.DataTypes.UUID,
         references: {
           model: {
@@ -42,10 +42,10 @@ module.exports = {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      createdAt: {
+      created_at: {
         type: Sequelize.DataTypes.DATE
       },
-      updatedAt: {
+      updated_at: {
         type: Sequelize.DataTypes.DATE
       }
     });

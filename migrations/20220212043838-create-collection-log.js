@@ -8,7 +8,7 @@ module.exports = {
         defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
-      userId: {
+      user_id: {
         type: Sequelize.DataTypes.UUID,
         references: {
           model: {
@@ -18,10 +18,10 @@ module.exports = {
         },
         allowNull: false
       },
-      createdAt: {
+      created_at: {
         type: Sequelize.DataTypes.DATE
       },
-      updatedAt: {
+      updated_at: {
         type: Sequelize.DataTypes.DATE
       }
     });

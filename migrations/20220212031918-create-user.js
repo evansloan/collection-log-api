@@ -11,13 +11,13 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
         allowNull: false,
       },
-      runeliteId: {
+      runelite_id: {
         type: Sequelize.DataTypes.STRING,
       },
-      createdAt: {
+      created_at: {
         type: Sequelize.DataTypes.DATE
       },
-      updatedAt: {
+      updated_at: {
         type: Sequelize.DataTypes.DATE
       }
     });

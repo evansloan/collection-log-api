@@ -26,7 +26,7 @@ class User extends Model {
   username!: string;
 
   @Column
-  runeliteId?: string;
+  runelite_id?: string;
 
   @HasOne(() => CollectionLog)
   collectionLog?: CollectionLog;
