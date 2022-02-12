@@ -1,16 +1,30 @@
 service: collection-log-api
 app: collection-log-api
-
 frameworkVersion: "2"
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs12.x
   lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'dev'}
+  region: us-east-1
 
   environment:
-    STAGE_NAME: ${self:provider.stage}
+    STAGE_NAME: ${self:provider.stage}	
+    DB_DIALECT: postgres
+    DB_NAME: ${env:DB_NAME}
+    DB_USER: ${env:DB_USER}
+    DB_PASS: ${env:DB_PASS}
+    DB_HOST: ${env:DB_HOST}
+    DB_PORT: ${env:DB_PORT}
+
+  vpc:
+    securityGroupIds:
+      - !Ref LambdaSecurityGroup
+    subnetIds:
+      - !Ref PrivateSubnetA
+      - !Ref PrivateSubnetB
 
   iam:
     role:
@@ -22,12 +36,16 @@ provider:
             - dynamodb:Scan
             - dynamodb:Query
           Resource:
-            - Fn::GetAtt:
-                - CollectionLogTable
-                - Arn
-            - Fn::GetAtt:
-                - UserTable
-                - Arn
+            - !GetAtt CollectionLogTable.Arn
+            - !GetAtt UserTable.Arn
+        - Effect: Allow
+          Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            - ec2:AssignPrivateIpAddresses
+            - ec2:UnassignPrivateIpAddresses
+          Resource: '*'
 
 functions:
   createCollectionLog:
@@ -86,6 +104,13 @@ functions:
           path: /user/{id}
           method: put
 
+  placeholder:
+    handler: src/handlers/user.placeholder
+    events:
+      - httpApi:
+          path: /dbtest
+          method: get
+
 plugins:
   - serverless-plugin-typescript
   - serverless-domain-manager
@@ -107,31 +132,8 @@ custom:
     endpointType: regional
 
 resources:
-  Resources:
-    CollectionLogTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: CollectionLogTable-${self:provider.stage}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        AttributeDefinitions:
-          - AttributeName: collectionlog_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: collectionlog_id
-            KeyType: HASH
-
-    UserTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: UserTable-${self:provider.stage}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        AttributeDefinitions:
-          - AttributeName: user_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: user_id
-            KeyType: HASH
+  - ${file(resources/vpc.yml)}
+  - ${file(resources/securitygroup.yml)}
+  - ${file(resources/route.yml)}
+  - ${file(resources/dynamodb.yml)}
+  - ${file(resources/rds.yml)}
