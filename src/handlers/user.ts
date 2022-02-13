@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-import User from '../models/User';
+import CollectionLogUser from '../models/CollectionLogUser';
 import dbConnect from '../services/databaseService';
 
 const headers = {
@@ -12,7 +12,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await dbConnect();
   const body = JSON.parse(event.body as string);
 
-  const existingUser = await User.findOne({ where: { 
+  const existingUser = await CollectionLogUser.findOne({ where: { 
     runeliteId: body.runelite_id 
   }});
 
@@ -24,7 +24,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  const user = await User.create({
+  const user = await CollectionLogUser.create({
     username: body.username.toLowerCase(),
     runeliteId: body.runelite_id,
   });
@@ -39,7 +39,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   await dbConnect();
   const id = event.pathParameters?.id as string;
-  const user = await User.findByPk(id);
+  const user = await CollectionLogUser.findByPk(id);
 
   if (!user) {
     return {
@@ -61,7 +61,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const id = event.pathParameters?.id as string;
   const body = JSON.parse(event.body as string);
 
-  const user = await User.update({ username: body.username }, {
+  const user = await CollectionLogUser.update({ username: body.username }, {
     where: { id: id }
   });
 

@@ -5,7 +5,7 @@ import CollectionLogEntry from '../models/CollectionLogEntry';
 import CollectionLogItem from '../models/CollectionLogItem';
 import CollectionLogKillCount from '../models/CollectionLogKillCount';
 import CollectionLogTab from '../models/CollectionLogTab';
-import User from '../models/User';
+import CollectionLogUser from '../models/CollectionLogUser';
 import dbConnect from '../services/databaseService';
 import CollectionLogTable from '../tables/CollectionLogTable';
 import UserTable from '../tables/UserTable';
@@ -20,7 +20,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const body = JSON.parse(event.body as string);
 
-  const user = await User.findOne({ where: {
+  const user = await CollectionLogUser.findOne({ where: {
     runeliteId: body.runelite_id,
   }});
 
@@ -90,6 +90,10 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           obtained: item.obtained,
         });
       });
+
+      if (!entryData.kill_count) {
+        continue;
+      }
 
       // Save kill count data for bulk insert
       entryData.kill_count.forEach((killCount: string) => {

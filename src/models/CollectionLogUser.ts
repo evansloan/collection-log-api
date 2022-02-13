@@ -21,11 +21,11 @@ import CollectionLog from './CollectionLog';
   ]
 }))
 @Table({
-  tableName: 'user',
+  tableName: 'collection_log_user',
   underscored: true,
   paranoid: true,
 })
-class User extends Model {
+class CollectionLogUser extends Model {
 
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -43,4 +43,4 @@ class User extends Model {
   collectionLog?: CollectionLog;
 }
 
-export default User;
+export default CollectionLogUser;

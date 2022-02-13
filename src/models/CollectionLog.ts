@@ -12,7 +12,7 @@ import {
 
 import CollectionLogItem from './CollectionLogItem';
 import CollectionLogKillCount from './CollectionLogKillCount';
-import User from './User';
+import CollectionLogUser from './CollectionLogUser';
 
 @Table({
   tableName: 'collection_log',
@@ -26,12 +26,12 @@ class CollectionLog extends Model {
   @Column(DataType.UUID)
   id!: string;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => CollectionLogUser)
   @Column(DataType.UUID)
   userId!: string;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => CollectionLogUser)
+  user!: CollectionLogUser;
 
   @HasMany(() => CollectionLogItem)
   items?: CollectionLogItem[];
