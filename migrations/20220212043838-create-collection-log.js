@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.DataTypes.UUID,
         references: {
           model: {
-            tableName: 'user',
+            tableName: 'collection_log_user',
           },
           key: 'id'
         },
