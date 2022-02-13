@@ -21,7 +21,7 @@ import CollectionLog from './CollectionLog';
   ]
 }))
 @Table({
-  tableName: 'users',
+  tableName: 'user',
   underscored: true,
   paranoid: true,
 })

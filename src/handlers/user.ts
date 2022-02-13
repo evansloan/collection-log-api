@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import User from '../models/User';
-import db from '../services/DatabaseService';
+import dbConnect from '../services/databaseService';
 
 const headers = {
   'content-type': 'application/json',
@@ -9,23 +9,12 @@ const headers = {
 };
 
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const body = JSON.parse(event.body as string);
 
-  try {
-    await db.authenticate();
-  } catch (error) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify(`Unabled to establish database connection: ${error}`),
-    }
-  }
-
-  const existingUser = await User.findOne({
-    where: { 
-      runeliteId: body.runelite_id 
-    }
-  });
+  const existingUser = await User.findOne({ where: { 
+    runeliteId: body.runelite_id 
+  }});
 
   if (existingUser) {
     return {
@@ -48,6 +37,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 };
 
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const id = event.pathParameters?.id as string;
   const user = await User.findByPk(id);
 
@@ -67,6 +57,7 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
 };
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const id = event.pathParameters?.id as string;
   const body = JSON.parse(event.body as string);
 

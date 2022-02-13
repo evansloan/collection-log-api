@@ -1,4 +1,5 @@
 import {
+  AllowNull,
   BelongsTo,
   Column,
   DataType,
@@ -11,33 +12,33 @@ import {
 } from 'sequelize-typescript';
 
 import CollectionLogItem from './CollectionLogItem';
-import CollectionLogKillCount from './CollectionLogKillCount';
-import User from './User';
+import CollectionLogTab from './CollectionLogTab';
 
 @Table({
-  tableName: 'collection_log',
+  tableName: 'collection_log_entry',
   underscored: true,
   paranoid: true,
 })
-class CollectionLog extends Model {
+class CollectionLogEntry extends Model {
 
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   id!: string;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => CollectionLogTab)
   @Column(DataType.UUID)
-  userId!: string;
+  collectionLogTabId!: string;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @AllowNull(false)
+  @Column
+  name!: string;
+
+  @BelongsTo(() => CollectionLogTab)
+  tab!: CollectionLogTab;
 
   @HasMany(() => CollectionLogItem)
   items?: CollectionLogItem[];
-
-  @HasMany(() => CollectionLogKillCount)
-  killCounts?: CollectionLogKillCount[];
 }
 
-export default CollectionLog;
+export default CollectionLogEntry;

@@ -10,13 +10,14 @@ import {
 } from 'sequelize-typescript';
 
 import CollectionLog from './CollectionLog';
+import CollectionLogEntry from './CollectionLogEntry';
 
 @Table({
-  tableName: 'collection_log_detail',
+  tableName: 'collection_log_item',
   underscored: true,
   paranoid: true,
 })
-class CollectionLogDetail extends Model {
+class CollectionLogItem extends Model {
 
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -27,11 +28,9 @@ class CollectionLogDetail extends Model {
   @Column(DataType.UUID)
   collectionLogId!: string;
 
-  @Column
-  tab!: string;
-
-  @Column
-  entry!: string;
+  @ForeignKey(() => CollectionLogEntry)
+  @Column(DataType.UUID)
+  collectionLogEntryId!: string;
 
   @Column
   name!: string;
@@ -49,6 +48,9 @@ class CollectionLogDetail extends Model {
 
   @BelongsTo(() => CollectionLog)
   collectionLog!: CollectionLog;
+
+  @BelongsTo(() => CollectionLogEntry)
+  entry!: CollectionLogEntry;
 }
 
-export default CollectionLogDetail;
+export default CollectionLogItem;

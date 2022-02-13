@@ -50,6 +50,7 @@ provider:
 functions:
   createCollectionLog:
     handler: src/handlers/collectionLog.create
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog
