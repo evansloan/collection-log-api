@@ -50,7 +50,10 @@ class CollectionLog extends Model {
         model: CollectionLogItem,
         where: {
           collectionLogId: this.id,
-        }
+        },
+        order: [
+          [CollectionLogItem, 'sequence', 'ASC']
+        ],
       }, {
         model: CollectionLogKillCount,
         where: {

@@ -246,7 +246,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       });
 
       const items: Array<any> = logData[tabName][entryName].items;
-      for (const itemData of items) {
+      items.forEach((itemData: any, i: number) => {
         const item = entry?.items?.find((item) => {
           return item.itemId == itemData.id;
         });
@@ -255,14 +255,15 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
         updatedItems.push({
           id: itemId,
-          collectionLogId: user.collectionLog.id,
+          collectionLogId: user.collectionLog?.id,
           collectionLogEntryId: entry?.id,
           itemId: itemData.id,
           name: itemData.name,
           quantity: itemData.quantity,
           obtained: itemData.obtained,
+          sequence: i,
         });
-      }
+      });
     }
   }
 
@@ -270,6 +271,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     updateOnDuplicate: [
       'quantity',
       'obtained',
+      'sequence',
     ],
   });
 
