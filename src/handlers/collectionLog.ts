@@ -84,7 +84,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const entryData = tabData[tabName][entryName];
 
       // Save item data for bulk insert
-      entryData.items.forEach((item: any) => {
+      entryData.items.forEach((item: any, i: number) => {
         items.push({
           collectionLogId: collectionLog.id,
           collectionLogEntryId: entry?.id,
@@ -92,6 +92,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           name: item.name,
           quantity: item.quantity,
           obtained: item.obtained,
+          sequence: i,
         });
       });
 
