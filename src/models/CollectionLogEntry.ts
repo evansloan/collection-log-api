@@ -12,6 +12,7 @@ import {
 } from 'sequelize-typescript';
 
 import CollectionLogItem from './CollectionLogItem';
+import CollectionLogKillCount from './CollectionLogKillCount';
 import CollectionLogTab from './CollectionLogTab';
 
 @Table({
@@ -39,6 +40,9 @@ class CollectionLogEntry extends Model {
 
   @HasMany(() => CollectionLogItem)
   items?: CollectionLogItem[];
+
+  @HasMany(() => CollectionLogKillCount)
+  killCounts?: CollectionLogKillCount[];
 }
 
 export default CollectionLogEntry;
