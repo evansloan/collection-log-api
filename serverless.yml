@@ -31,15 +31,6 @@ provider:
       statements:
         - Effect: Allow
           Action:
-            - dynamodb:PutItem
-            - dynamodb:GetItem
-            - dynamodb:Scan
-            - dynamodb:Query
-          Resource:
-            - !GetAtt CollectionLogTable.Arn
-            - !GetAtt UserTable.Arn
-        - Effect: Allow
-          Action:
             - ec2:CreateNetworkInterface
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
@@ -58,6 +49,7 @@ functions:
 
   getCollectionLog:
     handler: src/handlers/collectionLog.get
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog/{id}
@@ -129,5 +121,4 @@ resources:
   - ${file(resources/vpc.yml)}
   - ${file(resources/securitygroup.yml)}
   - ${file(resources/route.yml)}
-  - ${file(resources/dynamodb.yml)}
   - ${file(resources/rds.yml)}
