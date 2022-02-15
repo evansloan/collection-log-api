@@ -1,5 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
+import { v4 } from 'uuid';
+
 import CollectionLog from '../models/CollectionLog';
 import CollectionLogEntry from '../models/CollectionLogEntry';
 import CollectionLogItem from '../models/CollectionLogItem';
@@ -7,8 +9,6 @@ import CollectionLogKillCount from '../models/CollectionLogKillCount';
 import CollectionLogTab from '../models/CollectionLogTab';
 import CollectionLogUser from '../models/CollectionLogUser';
 import dbConnect from '../services/databaseService';
-import CollectionLogTable from '../tables/CollectionLogTable';
-import UserTable from '../tables/UserTable';
 
 const headers = {
   'content-type': 'application/json',
@@ -20,9 +20,12 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const body = JSON.parse(event.body as string);
 
-  const user = await CollectionLogUser.findOne({ where: {
-    runeliteId: body.runelite_id,
-  }});
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: body.runelite_id,
+    },
+    include: [CollectionLog],
+  });
 
   if (!user) {
     return {
@@ -35,10 +38,11 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const existingLog = user.collectionLog;
 
   if (existingLog) {
+    const resData = await existingLog.jsonData();
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(existingLog),
+      body: JSON.stringify(resData),
     }
   }
 
@@ -114,10 +118,12 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await CollectionLogItem.bulkCreate(items);
   await CollectionLogKillCount.bulkCreate(killCounts);
 
+  const resData = await collectionLog.jsonData();
+
   return {
     statusCode: 201,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
 
@@ -125,8 +131,8 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
   dbConnect();
 
   const id = event.pathParameters?.id as string;
-
   const collectionLog = await CollectionLog.findByPk(id);
+
   if (!collectionLog) {
     return {
       statusCode: 404,
@@ -135,23 +141,27 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
     };
   }
 
+  const resData = await collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
 
 export const getByRuneliteId = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+  
   const runeliteId = event.pathParameters?.runelite_id as string;
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId,
+    },
+    include: [CollectionLog],
+  });
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
-
-  const user = await userTable.getByRuneliteId(runeliteId);
-  const collectionLog = await clTable.getByUser(user);
-
-  if (!collectionLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -159,23 +169,27 @@ export const getByRuneliteId = async (event: APIGatewayProxyEvent): Promise<APIG
     };
   }
 
+  const resData = await user.collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 }
 
 export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+
   const username = event.pathParameters?.username as string;
+  const user = await CollectionLogUser.findOne({
+    where: {
+      username: username,
+    },
+    include: [CollectionLog],
+  });
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
-
-  const user = await userTable.getByUsername(username);
-  const collectionLog = await clTable.getByUser(user);
-
-  if (!collectionLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -183,24 +197,29 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
     };
   }
 
+  const resData = await user.collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 }
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+
   const runeliteId = event.pathParameters?.runelite_id as string;
   const body = JSON.parse(event.body as string);
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId
+    },
+    include: [CollectionLog]
+  });
 
-  const user = await userTable.getByRuneliteId(runeliteId);
-
-  const existingLog = await clTable.getByUser(user);
-  if (!existingLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -208,13 +227,56 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  body.user_id = user?.user_id
-  const collectionLogId = existingLog.collectionlog_id as string;
-  const collectionLog = await new CollectionLogTable().update(collectionLogId, body);
+  const logData = body.collection_log.tabs;
+  const updatedItems: any = [];
+
+  for (const tabName in logData) {
+    for (const entryName in logData[tabName]) {
+      const entry = await CollectionLogEntry.findOne({
+        where: {
+          name: entryName,
+        },
+        include: {
+          model: CollectionLogItem,
+          where: {
+            collectionLogId: user.collectionLog.id,
+          }
+        }
+      });
+
+      const items: Array<any> = logData[tabName][entryName].items;
+      for (const itemData of items) {
+        const item = entry?.items?.find((item) => {
+          return item.itemId == itemData.id;
+        });
+
+        const itemId = item?.id ?? v4();
+
+        updatedItems.push({
+          id: itemId,
+          collectionLogId: user.collectionLog.id,
+          collectionLogEntryId: entry?.id,
+          itemId: itemData.id,
+          name: itemData.name,
+          quantity: itemData.quantity,
+          obtained: itemData.obtained,
+        });
+      }
+    }
+  }
+
+  await CollectionLogItem.bulkCreate(updatedItems, {
+    updateOnDuplicate: [
+      'quantity',
+      'obtained',
+    ],
+  });
+
+  const resData = await user.collectionLog.jsonData();
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
