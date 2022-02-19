@@ -5,7 +5,7 @@ import CollectionLogEntry from '../models/CollectionLogEntry';
 import CollectionLogItem from '../models/CollectionLogItem';
 import CollectionLogKillCount from '../models/CollectionLogKillCount';
 import CollectionLogTab from '../models/CollectionLogTab';
-import User from '../models/CollectionLogUser';
+import CollectionLogUser from '../models/CollectionLogUser';
 
 export default async() => {
   const db = new Sequelize({
@@ -21,8 +21,9 @@ export default async() => {
       CollectionLogItem, 
       CollectionLogKillCount,
       CollectionLogTab,
-      User,
+      CollectionLogUser,
     ],
   });
   await db.authenticate();
+  return db;
 }

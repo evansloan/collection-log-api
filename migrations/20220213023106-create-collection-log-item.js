@@ -48,6 +48,9 @@ module.exports = {
         type: Sequelize.DataTypes.INTEGER,
         allowNull: false,
       },
+      obtained_at: {
+        type: Sequelize.DataTypes.DATE
+      },
       created_at: {
         type: Sequelize.DataTypes.DATE
       },

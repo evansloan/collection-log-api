@@ -49,6 +49,9 @@ class CollectionLogItem extends Model {
   @Column(DataType.NUMBER.UNSIGNED)
   sequence!: number;
 
+  @Column(DataType.DATE)
+  obtainedAt?: Date;
+
   @BelongsTo(() => CollectionLog)
   collectionLog!: CollectionLog;
 

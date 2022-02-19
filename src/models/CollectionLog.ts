@@ -51,37 +51,39 @@ class CollectionLog extends Model {
         where: {
           collectionLogId: this.id,
         },
-        order: [
-          [CollectionLogItem, 'sequence', 'ASC']
-        ],
       }, {
         model: CollectionLogKillCount,
         where: {
           collectionLogId: this.id,
         },
+        required: false,
       }],
+      order: [['items', 'sequence', 'ASC']],
     });
   
     let data: any = {
       collectionlog_id: this.id,
       user_id: this.userId,
-      tabs: {},
+      collection_log: {
+        tabs: {},
+      }
     };
   
     collectionLogEntries.forEach((entry) => {
       const tabName = entry.tab.name;
   
-      if (!data.tabs.hasOwnProperty(tabName)) {
-        data.tabs[tabName] = {};
+      if (!data.collection_log.tabs.hasOwnProperty(tabName)) {
+        data.collection_log.tabs[tabName] = {};
       }
   
-      data.tabs[tabName][entry.name] = {
+      data.collection_log.tabs[tabName][entry.name] = {
         items: entry.items?.map((item) => {
           return {
             id: item.itemId,
             name: item.name,
             quantity: item.quantity,
             obtained: item.obtained,
+            sequence: item.sequence,
           }
         }),
         kill_count: entry.killCounts?.map((killCount) => {

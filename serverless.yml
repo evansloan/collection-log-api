@@ -71,10 +71,25 @@ functions:
 
   updateCollectionLog:
     handler: src/handlers/collectionLog.update
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog/{runelite_id}
           method: put
+
+  collectionLogExists:
+    handler: src/handlers/collectionLog.collectionLogExists
+    events:
+      - httpApi:
+          path: /collectionlog/exists/{runeliteId}
+          method: get
+
+  recentCollectionLogItems:
+    handler: src/handlers/collectionLog.recentItems
+    events:
+      - httpApi:
+          path: /collectionlog/recent/{username}
+          method: get
 
   createUser:
     handler: src/handlers/user.create
@@ -96,6 +111,20 @@ functions:
       - httpApi:
           path: /user/{id}
           method: put
+
+  getUniqueHiscores:
+    handler: src/handlers/hiscores.unique
+    events:
+      - httpApi:
+          path: /hiscores/unique/{page}
+          method: get
+
+  getTotalHiscores:
+    handler: src/handlers/hiscores.total
+    events:
+      - httpApi:
+          path: /hiscores/total/{page}
+          method: get
 
 plugins:
   - serverless-plugin-typescript

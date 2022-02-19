@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-
+import { Sequelize } from 'sequelize-typescript';
 import { v4 } from 'uuid';
 
 import CollectionLog from '../models/CollectionLog';
@@ -93,6 +93,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           quantity: item.quantity,
           obtained: item.obtained,
           sequence: i,
+          obtainedAt: item.obtained ? Date.now() : null,
         });
       });
 
@@ -184,9 +185,7 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
 
   const username = event.pathParameters?.username as string;
   const user = await CollectionLogUser.findOne({
-    where: {
-      username: username,
-    },
+    where: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('username')), username.toLowerCase()),
     include: [CollectionLog],
   });
 
@@ -230,6 +229,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const logData = body.collection_log.tabs;
   const updatedItems: any = [];
+  const updatedKillCounts: any = [];
 
   for (const tabName in logData) {
     for (const entryName in logData[tabName]) {
@@ -237,21 +237,43 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         where: {
           name: entryName,
         },
-        include: {
+        include: [{
           model: CollectionLogItem,
           where: {
             collectionLogId: user.collectionLog.id,
           }
-        }
+        }, {
+          model: CollectionLogKillCount,
+          where: {
+            collectionLogId: user.collectionLog.id,
+          },
+          required: false,
+        }],
       });
 
-      const items: Array<any> = logData[tabName][entryName].items;
-      items.forEach((itemData: any, i: number) => {
-        const item = entry?.items?.find((item) => {
+      const items: any = logData[tabName][entryName].items;
+      items.forEach(async(itemData: any, i: number) => {
+        let duplicates = entry?.items?.filter((item) => {
           return item.itemId == itemData.id;
         });
 
+        // remove any duplicate item records that may have been
+        // uploaded due to plugin bug
+        const item = duplicates ? duplicates[0] : undefined;
+        if (duplicates && duplicates.length > 1) {
+          duplicates[1].destroy();
+        }
+
+        const existingItem = updatedItems.find((updatedItem: any) => {
+          return updatedItem.itemId == item?.itemId && updatedItem.collectionLogEntryId == entry?.id;
+        });
+
+        if (existingItem) {
+          return;
+        }
+
         const itemId = item?.id ?? v4();
+        const newItem = !item?.obtained && itemData.obtained;
 
         updatedItems.push({
           id: itemId,
@@ -262,6 +284,28 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           quantity: itemData.quantity,
           obtained: itemData.obtained,
           sequence: i,
+          obtainedAt: newItem ? Date.now() : item?.obtainedAt,
+        });
+      });
+
+      const killCounts = logData[tabName][entryName].kill_count;
+      killCounts?.forEach((killCountData: string) => {
+        const killCountSplit = killCountData.split(': ');
+        const name = killCountSplit[0];
+        const amount = killCountSplit[1];
+
+        const existingKc = entry?.killCounts?.find((killCount) => {
+          return killCount.name == name;
+        });
+
+        const killCountId = existingKc?.id ?? v4();
+
+        updatedKillCounts.push({
+          id: killCountId,
+          collectionLogId: user.collectionLog?.id,
+          collectionLogEntryId: entry?.id,
+          name: name,
+          amount: amount,
         });
       });
     }
@@ -275,6 +319,12 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     ],
   });
 
+  await CollectionLogKillCount.bulkCreate(updatedKillCounts, {
+    updateOnDuplicate: [
+      'amount'
+    ]
+  });
+
   const resData = await user.collectionLog.jsonData();
 
   return {
@@ -283,3 +333,52 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     body: JSON.stringify(resData),
   };
 };
+
+export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+  const runeliteId = event.pathParameters?.runeliteId as string;
+
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId,
+    },
+    include: [CollectionLog],
+  });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ exists: user?.collectionLog ? true : false }),
+  }
+}
+
+export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+  const username = event.pathParameters?.username as string;
+
+  const user = await CollectionLogUser.findOne({
+    where: {
+      username: username,
+    },
+    include: [{
+      model: CollectionLog,
+      include: [CollectionLogItem],
+      order: [['items', 'created_at', 'DESC']],
+    }],
+    limit: 5,
+  });
+
+  if (!user?.collectionLog) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: `Collection log not found with username: ${username}` }),
+    };
+  }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(user.collectionLog.items),
+  }
+}

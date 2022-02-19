@@ -17,6 +17,9 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }});
 
   if (existingUser) {
+    await existingUser.update({
+      username: body.username,
+    });
     return {
       statusCode: 200,
       headers,
@@ -25,7 +28,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   const user = await CollectionLogUser.create({
-    username: body.username.toLowerCase(),
+    username: body.username,
     runeliteId: body.runelite_id,
   });
 
