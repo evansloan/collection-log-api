@@ -47,7 +47,13 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  const collectionLog = await CollectionLog.create({ userId: user.id });
+  const collectionLog = await CollectionLog.create({
+    uniqueObtained: body.collection_log.unique_obtained,
+    uniqueItems: body.collection_log.unique_items,
+    totalObtained: body.collection_log.total_obtained,
+    totalItems: body.collection_log.total_items,
+    userId: user.id 
+  });
   const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
@@ -227,6 +233,13 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       body: JSON.stringify({ error: `Collection log not found with runelite_id: ${runeliteId}` }),
     };
   }
+
+  await user.collectionLog.update({
+    uniqueObtained: body.collection_log.unique_obtained,
+    uniqueItems: body.collection_log.unique_items,
+    totalObtained: body.collection_log.total_obtained,
+    totalItems: body.collection_log.total_items,
+  });
 
   const logData = body.collection_log.tabs;
   const updatedItems: any = [];

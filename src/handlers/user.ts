@@ -19,6 +19,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (existingUser) {
     await existingUser.update({
       username: body.username,
+      accountType: body.account_type,
     });
     return {
       statusCode: 200,
@@ -29,6 +30,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const user = await CollectionLogUser.create({
     username: body.username,
+    accountType: body.account_type,
     runeliteId: body.runelite_id,
   });
 
