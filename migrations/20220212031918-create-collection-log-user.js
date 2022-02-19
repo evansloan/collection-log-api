@@ -11,6 +11,9 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
         allowNull: false,
       },
+      account_type: {
+        type: Sequelize.DataTypes.STRING,
+      },
       runelite_id: {
         type: Sequelize.DataTypes.STRING,
       },

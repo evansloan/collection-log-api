@@ -28,6 +28,22 @@ class CollectionLog extends Model {
   @Column(DataType.UUID)
   id!: string;
 
+  @Default(0)
+  @Column
+  uniqueObtained!: number;
+
+  @Default(0)
+  @Column
+  uniqueItems!: number;
+
+  @Default(0)
+  @Column
+  totalObtained!: number;
+
+  @Default(0)
+  @Column
+  totalItems!: number;
+
   @ForeignKey(() => CollectionLogUser)
   @Column(DataType.UUID)
   userId!: string;

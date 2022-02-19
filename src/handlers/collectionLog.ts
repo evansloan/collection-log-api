@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { v4 } from 'uuid';
 
@@ -362,10 +363,16 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     },
     include: [{
       model: CollectionLog,
-      include: [CollectionLogItem],
-      order: [['items', 'created_at', 'DESC']],
+      include: [{
+        model: CollectionLogItem,
+        where: {
+          obtainedAt: { [Op.ne]: null },
+        },
+        limit: 5,
+        subQuery: false,
+      }],
+      order: [['items', 'obtained_at', 'DESC']],
     }],
-    limit: 5,
   });
 
   if (!user?.collectionLog) {

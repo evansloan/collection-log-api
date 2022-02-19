@@ -8,6 +8,22 @@ module.exports = {
         defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true,
       },
+      unique_obtained: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      unique_items: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      total_obtained: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      total_items: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       user_id: {
         type: Sequelize.DataTypes.UUID,
         references: {
