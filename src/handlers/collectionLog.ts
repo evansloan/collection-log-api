@@ -140,3 +140,27 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     body: JSON.stringify(collectionLog),
   };
 };
+
+export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const runeliteId = event.pathParameters?.runelite_id as string;
+
+  const userTable = new UserTable();
+  const clTable = new CollectionLogTable();
+
+  const user = await userTable.getByRuneliteId(runeliteId);
+  const collectionLog = await clTable.getByUser(user);
+
+  if (!collectionLog) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: `Collection log not found with runelite_id: ${runeliteId}` }),
+    };
+  }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(collectionLog),
+  };
+}

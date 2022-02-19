@@ -65,6 +65,14 @@ functions:
           path: /collectionlog/{runelite_id}
           method: put
 
+  collectionLogExists:
+    handler: src/handlers/collectionLog.collectionLogExists
+    events:
+      - httpApi:
+          path: /collectionlog/exists/{runeliteId}
+          method: get
+
+
   createUser:
     handler: src/handlers/user.create
     events:
