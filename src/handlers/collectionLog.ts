@@ -154,13 +154,13 @@ export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: `Collection log not found with runelite_id: ${runeliteId}` }),
+      body: JSON.stringify({ exists: false }),
     };
   }
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify({ exists: true }),
   };
 }

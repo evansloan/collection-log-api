@@ -69,7 +69,7 @@ functions:
     handler: src/handlers/collectionLog.collectionLogExists
     events:
       - httpApi:
-          path: /collectionlog/exists/{runeliteId}
+          path: /collectionlog/exists/{runelite_id}
           method: get
 
 
