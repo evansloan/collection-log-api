@@ -375,9 +375,7 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
 
   const user = await CollectionLogUser.findOne({
     include: [CollectionLog],
-    where: {
-      username: username,
-    }
+    where: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('username')), username.toLowerCase()),
   });
 
   if (!user?.collectionLog) {
