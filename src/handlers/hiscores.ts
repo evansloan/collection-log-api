@@ -29,6 +29,7 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         [Sequelize.col('unique_obtained'), 'obtained'],
         [Sequelize.col('unique_items'), 'total'],
         [Sequelize.col('user.username'), 'username'],
+        [Sequelize.col('user.account_type'), 'account_type'],
       ]
     },
     include: [{
@@ -64,6 +65,7 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
         [Sequelize.col('total_obtained'), 'obtained'],
         [Sequelize.col('total_items'), 'total'],
         [Sequelize.col('user.username'), 'username'],
+        [Sequelize.col('user.account_type'), 'account_type'],
       ]
     },
     include: [{
