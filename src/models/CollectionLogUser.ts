@@ -16,6 +16,7 @@ import CollectionLog from './CollectionLog';
   attributes: [
     'id',
     'username',
+    'accountType',
     'created_at',
     'updated_at',
   ]
