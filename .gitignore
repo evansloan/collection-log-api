@@ -3,5 +3,8 @@ node_modules
 .build
 .vscode
 .env
+.env.local
+.env.dev
+.env.prod
 .DS_Store
 dynamodumps/
