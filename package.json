@@ -15,10 +15,12 @@
     "sequelize-cli": "^6.4.1",
     "serverless": "^2.52.1",
     "serverless-domain-manager": "^5.2.0",
+    "serverless-offline": "^8.5.0",
     "serverless-plugin-typescript": "^1.1.9",
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@types/sequelize": "^4.28.11",
     "@types/uuid": "^8.3.3",
     "@types/validator": "^13.7.1",
     "aws-lambda": "^1.0.6",

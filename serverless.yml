@@ -129,6 +129,7 @@ functions:
 plugins:
   - serverless-plugin-typescript
   - serverless-domain-manager
+  - serverless-offline
  
 custom:
   dev:
