@@ -100,7 +100,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           quantity: item.quantity,
           obtained: item.obtained,
           sequence: i,
-          obtainedAt: item.obtained ? Date.now() : null,
+          obtainedAt: item.obtained ? new Date().toISOString() : null,
         });
       });
 
@@ -298,7 +298,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           quantity: itemData.quantity,
           obtained: itemData.obtained,
           sequence: i,
-          obtainedAt: newItem ? Date.now() : item?.obtainedAt,
+          obtainedAt: newItem ? new Date().toISOString() : item?.obtainedAt,
         });
       });
 
@@ -330,12 +330,15 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       'quantity',
       'obtained',
       'sequence',
+      'obtainedAt',
+      'updatedAt',
     ],
   });
 
   await CollectionLogKillCount.bulkCreate(updatedKillCounts, {
     updateOnDuplicate: [
-      'amount'
+      'amount',
+      'updatedAt',
     ]
   });
 
@@ -371,21 +374,10 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
   const username = event.pathParameters?.username as string;
 
   const user = await CollectionLogUser.findOne({
+    include: [CollectionLog],
     where: {
       username: username,
-    },
-    include: [{
-      model: CollectionLog,
-      include: [{
-        model: CollectionLogItem,
-        where: {
-          obtainedAt: { [Op.ne]: null },
-        },
-        limit: 5,
-        subQuery: false,
-      }],
-      order: [['items', 'obtained_at', 'DESC']],
-    }],
+    }
   });
 
   if (!user?.collectionLog) {
@@ -396,9 +388,21 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     };
   }
 
+  const items = await CollectionLogItem.findAll({
+    where: {
+      collectionLogId: user.collectionLog.id,
+      obtained: true,
+    },
+    order: [
+      ['obtained_at', 'DESC'],
+      ['name', 'ASC']
+    ],
+    limit: 5,
+  });
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(user.collectionLog.items),
+    body: JSON.stringify(items),
   }
 }

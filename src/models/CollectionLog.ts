@@ -82,6 +82,10 @@ class CollectionLog extends Model {
       user_id: this.userId,
       collection_log: {
         tabs: {},
+        total_obtained: this.totalObtained,
+        total_items: this.totalItems,
+        unique_obtained: this.uniqueObtained,
+        unique_items: this.uniqueItems,
       }
     };
   
