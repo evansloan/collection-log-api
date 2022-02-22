@@ -1,37 +1,47 @@
 service: collection-log-api
 app: collection-log-api
-
 frameworkVersion: "2"
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs12.x
   lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'dev'}
+  region: us-east-1
 
   environment:
-    STAGE_NAME: ${self:provider.stage}
+    STAGE_NAME: ${self:provider.stage}	
+    DB_DIALECT: postgres
+    DB_NAME: ${env:DB_NAME}
+    DB_USER: ${env:DB_USER}
+    DB_PASS: ${env:DB_PASS}
+    DB_HOST: ${env:DB_HOST}
+    DB_PORT: ${env:DB_PORT}
+
+  vpc:
+    securityGroupIds:
+      - !Ref LambdaSecurityGroup
+    subnetIds:
+      - !Ref PrivateSubnetA
+      - !Ref PrivateSubnetB
 
   iam:
     role:
       statements:
         - Effect: Allow
           Action:
-            - dynamodb:PutItem
-            - dynamodb:GetItem
-            - dynamodb:Scan
-            - dynamodb:Query
-          Resource:
-            - Fn::GetAtt:
-                - CollectionLogTable
-                - Arn
-            - Fn::GetAtt:
-                - UserTable
-                - Arn
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            - ec2:AssignPrivateIpAddresses
+            - ec2:UnassignPrivateIpAddresses
+          Resource: '*'
 
 functions:
   createCollectionLog:
     handler: src/handlers/collectionLog.create
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog
@@ -39,6 +49,7 @@ functions:
 
   getCollectionLog:
     handler: src/handlers/collectionLog.get
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog/{id}
@@ -60,6 +71,7 @@ functions:
 
   updateCollectionLog:
     handler: src/handlers/collectionLog.update
+    timeout: 25
     events:
       - httpApi:
           path: /collectionlog/{runelite_id}
@@ -69,9 +81,15 @@ functions:
     handler: src/handlers/collectionLog.collectionLogExists
     events:
       - httpApi:
-          path: /collectionlog/exists/{runelite_id}
+          path: /collectionlog/exists/{runeliteId}
           method: get
 
+  recentCollectionLogItems:
+    handler: src/handlers/collectionLog.recentItems
+    events:
+      - httpApi:
+          path: /collectionlog/recent/{username}
+          method: get
 
   createUser:
     handler: src/handlers/user.create
@@ -94,9 +112,24 @@ functions:
           path: /user/{id}
           method: put
 
+  getUniqueHiscores:
+    handler: src/handlers/hiscores.unique
+    events:
+      - httpApi:
+          path: /hiscores/unique/{page}
+          method: get
+
+  getTotalHiscores:
+    handler: src/handlers/hiscores.total
+    events:
+      - httpApi:
+          path: /hiscores/total/{page}
+          method: get
+
 plugins:
   - serverless-plugin-typescript
   - serverless-domain-manager
+  - serverless-offline
  
 custom:
   dev:
@@ -115,31 +148,7 @@ custom:
     endpointType: regional
 
 resources:
-  Resources:
-    CollectionLogTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: CollectionLogTable-${self:provider.stage}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        AttributeDefinitions:
-          - AttributeName: collectionlog_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: collectionlog_id
-            KeyType: HASH
-
-    UserTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: UserTable-${self:provider.stage}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        AttributeDefinitions:
-          - AttributeName: user_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: user_id
-            KeyType: HASH
+  - ${file(resources/vpc.yml)}
+  - ${file(resources/securitygroup.yml)}
+  - ${file(resources/route.yml)}
+  - ${file(resources/rds.yml)}

@@ -1,7 +1,15 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
+import { v4 } from 'uuid';
 
-import CollectionLogTable from '../tables/CollectionLogTable';
-import UserTable from '../tables/UserTable';
+import CollectionLog from '../models/CollectionLog';
+import CollectionLogEntry from '../models/CollectionLogEntry';
+import CollectionLogItem from '../models/CollectionLogItem';
+import CollectionLogKillCount from '../models/CollectionLogKillCount';
+import CollectionLogTab from '../models/CollectionLogTab';
+import CollectionLogUser from '../models/CollectionLogUser';
+import dbConnect from '../services/databaseService';
 
 const headers = {
   'content-type': 'application/json',
@@ -9,21 +17,16 @@ const headers = {
 };
 
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
+
   const body = JSON.parse(event.body as string);
 
-  const clTable = new CollectionLogTable();
-  const userTable = new UserTable();
-
-  const user = await userTable.getByRuneliteId(body.runelite_id);
-  const existingLog = await clTable.getByUser(user);
-
-  if (existingLog) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(existingLog),
-    }
-  }
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: body.runelite_id,
+    },
+    include: [CollectionLog],
+  });
 
   if (!user) {
     return {
@@ -33,21 +36,111 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  delete body.runelite_id;
-  body.user_id = user.user_id;
+  const existingLog = user.collectionLog;
 
-  const collectionLog = await clTable.create(body);
+  if (existingLog) {
+    const resData = await existingLog.jsonData();
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(resData),
+    }
+  }
+
+  const collectionLog = await CollectionLog.create({
+    uniqueObtained: body.collection_log.unique_obtained,
+    uniqueItems: body.collection_log.unique_items,
+    totalObtained: body.collection_log.total_obtained,
+    totalItems: body.collection_log.total_items,
+    userId: user.id 
+  });
+  const collectionLogTabs = await CollectionLogTab.findAll();
+  const collectionLogEntries = await CollectionLogEntry.findAll();
+
+  const tabData = body.collection_log.tabs;
+  const items: any = [];
+  const killCounts: any = [];
+
+  for (let tabName in tabData) {
+
+    // Check to see if there's an existing record for this tab
+    // Create one if not
+    let tab = collectionLogTabs.find((tab) => {
+      return tab.name == tabName;
+    });
+
+    if (!tab) {
+      tab = await CollectionLogTab.create({ name: tabName });
+    }
+
+    for (const entryName in tabData[tabName]) {
+
+      // Check to see if there's an existing record for this entry
+      // Create one if not
+      let entry = collectionLogEntries.find((entry) => {
+        return entry.name == entryName;
+      });
+
+      if (!entry) {
+        entry = await CollectionLogEntry.create({
+          collectionLogTabId: tab?.id,
+          name: entryName,
+        });
+      }
+
+      const entryData = tabData[tabName][entryName];
+
+      // Save item data for bulk insert
+      entryData.items.forEach((item: any, i: number) => {
+        items.push({
+          collectionLogId: collectionLog.id,
+          collectionLogEntryId: entry?.id,
+          itemId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          obtained: item.obtained,
+          sequence: i,
+          obtainedAt: item.obtained ? new Date().toISOString() : null,
+        });
+      });
+
+      if (!entryData.kill_count) {
+        continue;
+      }
+
+      // Save kill count data for bulk insert
+      entryData.kill_count.forEach((killCount: string) => {
+        const killCountData = killCount.split(': ');
+        const name = killCountData[0];
+        const amount = killCountData[1];
+
+        killCounts.push({
+          collectionLogId: collectionLog.id,
+          collectionLogEntryId: entry?.id,
+          name: name,
+          amount: amount,
+        });
+      });
+    }
+  }
+
+  await CollectionLogItem.bulkCreate(items);
+  await CollectionLogKillCount.bulkCreate(killCounts);
+
+  const resData = await collectionLog.jsonData();
 
   return {
     statusCode: 201,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
 
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+
   const id = event.pathParameters?.id as string;
-  const collectionLog = await new CollectionLogTable().get(id);
+  const collectionLog = await CollectionLog.findByPk(id);
 
   if (!collectionLog) {
     return {
@@ -57,23 +150,27 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
     };
   }
 
+  const resData = await collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
 
 export const getByRuneliteId = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+  
   const runeliteId = event.pathParameters?.runelite_id as string;
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId,
+    },
+    include: [CollectionLog],
+  });
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
-
-  const user = await userTable.getByRuneliteId(runeliteId);
-  const collectionLog = await clTable.getByUser(user);
-
-  if (!collectionLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -81,23 +178,25 @@ export const getByRuneliteId = async (event: APIGatewayProxyEvent): Promise<APIG
     };
   }
 
+  const resData = await user.collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 }
 
 export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+
   const username = event.pathParameters?.username as string;
+  const user = await CollectionLogUser.findOne({
+    where: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('username')), username.toLowerCase()),
+    include: [CollectionLog],
+  });
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
-
-  const user = await userTable.getByUsername(username);
-  const collectionLog = await clTable.getByUser(user);
-
-  if (!collectionLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -105,24 +204,29 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
     };
   }
 
+  const resData = await user.collectionLog.jsonData();
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 }
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+
   const runeliteId = event.pathParameters?.runelite_id as string;
   const body = JSON.parse(event.body as string);
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId
+    },
+    include: [CollectionLog]
+  });
 
-  const user = await userTable.getByRuneliteId(runeliteId);
-
-  const existingLog = await clTable.getByUser(user);
-  if (!existingLog) {
+  if (!user?.collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -130,37 +234,175 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  body.user_id = user?.user_id
-  const collectionLogId = existingLog.collectionlog_id as string;
-  const collectionLog = await new CollectionLogTable().update(collectionLogId, body);
+  await user.collectionLog.update({
+    uniqueObtained: body.collection_log.unique_obtained,
+    uniqueItems: body.collection_log.unique_items,
+    totalObtained: body.collection_log.total_obtained,
+    totalItems: body.collection_log.total_items,
+  });
+
+  const logData = body.collection_log.tabs;
+  const updatedItems: any = [];
+  const updatedKillCounts: any = [];
+
+  for (const tabName in logData) {
+    for (const entryName in logData[tabName]) {
+      const entry = await CollectionLogEntry.findOne({
+        where: {
+          name: entryName,
+        },
+        include: [{
+          model: CollectionLogItem,
+          where: {
+            collectionLogId: user.collectionLog.id,
+          }
+        }, {
+          model: CollectionLogKillCount,
+          where: {
+            collectionLogId: user.collectionLog.id,
+          },
+          required: false,
+        }],
+      });
+
+      const items: any = logData[tabName][entryName].items;
+      items.forEach(async(itemData: any, i: number) => {
+        let duplicates = entry?.items?.filter((item) => {
+          return item.itemId == itemData.id;
+        });
+
+        // remove any duplicate item records that may have been
+        // uploaded due to plugin bug
+        const item = duplicates ? duplicates[0] : undefined;
+        if (duplicates && duplicates.length > 1) {
+          duplicates[1].destroy();
+        }
+
+        const existingItem = updatedItems.find((updatedItem: any) => {
+          return updatedItem.itemId == item?.itemId && updatedItem.collectionLogEntryId == entry?.id;
+        });
+
+        if (existingItem) {
+          return;
+        }
+
+        const itemId = item?.id ?? v4();
+        const newItem = !item?.obtained && itemData.obtained;
+
+        updatedItems.push({
+          id: itemId,
+          collectionLogId: user.collectionLog?.id,
+          collectionLogEntryId: entry?.id,
+          itemId: itemData.id,
+          name: itemData.name,
+          quantity: itemData.quantity,
+          obtained: itemData.obtained,
+          sequence: i,
+          obtainedAt: newItem ? new Date().toISOString() : item?.obtainedAt,
+        });
+      });
+
+      const killCounts = logData[tabName][entryName].kill_count;
+      killCounts?.forEach((killCountData: string) => {
+        const killCountSplit = killCountData.split(': ');
+        const name = killCountSplit[0];
+        const amount = killCountSplit[1];
+
+        const existingKc = entry?.killCounts?.find((killCount) => {
+          return killCount.name == name;
+        });
+
+        const killCountId = existingKc?.id ?? v4();
+
+        updatedKillCounts.push({
+          id: killCountId,
+          collectionLogId: user.collectionLog?.id,
+          collectionLogEntryId: entry?.id,
+          name: name,
+          amount: amount,
+        });
+      });
+    }
+  }
+
+  await CollectionLogItem.bulkCreate(updatedItems, {
+    updateOnDuplicate: [
+      'quantity',
+      'obtained',
+      'sequence',
+      'obtainedAt',
+      'updatedAt',
+    ],
+  });
+
+  await CollectionLogKillCount.bulkCreate(updatedKillCounts, {
+    updateOnDuplicate: [
+      'amount',
+      'updatedAt',
+    ]
+  });
+
+  const resData = await user.collectionLog.jsonData();
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(collectionLog),
+    body: JSON.stringify(resData),
   };
 };
 
 export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const runeliteId = event.pathParameters?.runelite_id as string;
+  dbConnect();
+  const runeliteId = event.pathParameters?.runeliteId as string;
 
-  const userTable = new UserTable();
-  const clTable = new CollectionLogTable();
-
-  const user = await userTable.getByRuneliteId(runeliteId);
-  const collectionLog = await clTable.getByUser(user);
-
-  if (!collectionLog) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({ exists: false }),
-    };
-  }
+  const user = await CollectionLogUser.findOne({
+    where: {
+      runeliteId: runeliteId,
+    },
+    include: [CollectionLog],
+  });
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ exists: true }),
-  };
+    body: JSON.stringify({ exists: user?.collectionLog ? true : false }),
+  }
+}
+
+export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  dbConnect();
+  const username = event.pathParameters?.username as string;
+
+  const user = await CollectionLogUser.findOne({
+    include: [CollectionLog],
+    where: {
+      username: username,
+    }
+  });
+
+  if (!user?.collectionLog) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: `Collection log not found with username: ${username}` }),
+    };
+  }
+
+  const items = await CollectionLogItem.findAll({
+    where: {
+      collectionLogId: user.collectionLog.id,
+      obtained: true,
+    },
+    order: [
+      ['obtained_at', 'DESC'],
+      ['name', 'ASC']
+    ],
+    limit: 5,
+  });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(items),
+  }
 }

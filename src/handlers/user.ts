@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-import UserTable from '../tables/UserTable';
-
+import CollectionLogUser from '../models/CollectionLogUser';
+import dbConnect from '../services/databaseService';
 
 const headers = {
   'content-type': 'application/json',
@@ -9,12 +9,18 @@ const headers = {
 };
 
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const body = JSON.parse(event.body as string);
 
-  const userTable = new UserTable();
-  const existingUser = await userTable.getByRuneliteId(body.runelite_id);
+  const existingUser = await CollectionLogUser.findOne({ where: { 
+    runeliteId: body.runelite_id 
+  }});
 
   if (existingUser) {
+    await existingUser.update({
+      username: body.username,
+      accountType: body.account_type,
+    });
     return {
       statusCode: 200,
       headers,
@@ -22,8 +28,12 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  body.username = body.username.toLowerCase();
-  const user = await new UserTable().create(body);
+  const user = await CollectionLogUser.create({
+    username: body.username,
+    accountType: body.account_type,
+    runeliteId: body.runelite_id,
+  });
+
   return {
     statusCode: 201,
     headers,
@@ -32,8 +42,9 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 };
 
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const id = event.pathParameters?.id as string;
-  const user = await new UserTable().get(id);
+  const user = await CollectionLogUser.findByPk(id);
 
   if (!user) {
     return {
@@ -51,22 +62,25 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
 };
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  await dbConnect();
   const id = event.pathParameters?.id as string;
   const body = JSON.parse(event.body as string);
 
-  const user = await new UserTable().update(id, body);
+  const user = await CollectionLogUser.update({ username: body.username }, {
+    where: { id: id }
+  });
 
   if (!user) {
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: `User not found with ID: ${id}` }),
+      body: JSON.stringify({ updated: false }),
     };
   }
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(user),
+    body: JSON.stringify({ updated: true }),
   };
 };
