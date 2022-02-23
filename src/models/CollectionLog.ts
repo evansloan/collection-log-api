@@ -76,12 +76,16 @@ class CollectionLog extends Model {
       }],
       order: [['items', 'sequence', 'ASC']],
     });
+
+    const user = await CollectionLogUser.findByPk(this.userId);
   
     let data: any = {
       collectionlog_id: this.id,
       user_id: this.userId,
       collection_log: {
         tabs: {},
+        username: user?.username,
+        account_type: user?.accountType,
         total_obtained: this.totalObtained,
         total_items: this.totalItems,
         unique_obtained: this.uniqueObtained,
