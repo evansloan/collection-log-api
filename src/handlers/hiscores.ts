@@ -1,9 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { QueryTypes } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
 import CollectionLog from '../models/CollectionLog';
-import CollectionLogItem from '../models/CollectionLogItem';
 import CollectionLogUser from '../models/CollectionLogUser';
 import dbConnect from '../services/databaseService';
 
@@ -12,8 +10,25 @@ const headers = {
   'Access-Control-Allow-Origin': '*',
 };
 
+const validAccountTypes = [
+  'NORMAL',
+  'IRONMAN',
+  'GROUP_IRONMAN',
+  'HARDCORE_IRONMAN',
+  'ULTIMATE_IRONMAN',
+];
+
 export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const db = await dbConnect();
+  await dbConnect();
+
+  let accountType = event.queryStringParameters?.accountType?.toUpperCase();
+
+  let accountTypeFilter = undefined;
+  if (accountType && validAccountTypes.indexOf(accountType) != -1) {
+    accountTypeFilter = {
+      accountType: accountType,
+    }
+  }
 
   let page = 1;
   if (event.pathParameters?.page) {
@@ -35,6 +50,7 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     include: [{
       model: CollectionLogUser,
       attributes: [],
+      where: accountTypeFilter,
     }],
     order: [['unique_obtained', 'DESC']],
     limit: 25,
@@ -50,6 +66,15 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   await dbConnect();
+
+  let accountType = event.queryStringParameters?.accountType?.toUpperCase();
+
+  let accountTypeFilter = undefined;
+  if (accountType && validAccountTypes.indexOf(accountType) != -1) {
+    accountTypeFilter = {
+      accountType: accountType,
+    }
+  }
 
   let page = 1;
   if (event.pathParameters?.page) {
@@ -71,6 +96,7 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
     include: [{
       model: CollectionLogUser,
       attributes: [],
+      where: accountTypeFilter,
     }],
     order: [['total_obtained', 'DESC']],
     limit: 25,
