@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { v4 } from 'uuid';
 
@@ -255,7 +254,8 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           model: CollectionLogItem,
           where: {
             collectionLogId: user.collectionLog.id,
-          }
+          },
+          required: false,
         }, {
           model: CollectionLogKillCount,
           where: {
@@ -278,11 +278,11 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           duplicates[1].destroy();
         }
 
-        const existingItem = updatedItems.find((updatedItem: any) => {
+        const isUpdated = updatedItems.find((updatedItem: any) => {
           return updatedItem.itemId == item?.itemId && updatedItem.collectionLogEntryId == entry?.id;
         });
 
-        if (existingItem) {
+        if (isUpdated) {
           return;
         }
 
@@ -312,6 +312,14 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           return killCount.name == name;
         });
 
+        const isUpdated = updatedKillCounts.find((updatedKc: any) => {
+          return updatedKc.id == existingKc?.id;
+        });
+
+        if (isUpdated) {
+          return;
+        }
+
         const killCountId = existingKc?.id ?? v4();
 
         updatedKillCounts.push({
@@ -327,6 +335,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   await CollectionLogItem.bulkCreate(updatedItems, {
     updateOnDuplicate: [
+      'name',
       'quantity',
       'obtained',
       'sequence',
@@ -401,7 +410,6 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     group: ['item_id', 'name', 'obtained'],
     order: [
       [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'DESC'],
-      ['name', 'ASC']
     ],
     limit: 5,
   });
