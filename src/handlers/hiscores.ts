@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
 import CollectionLog from '../models/CollectionLog';
@@ -38,21 +39,32 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const limit = 25;
   const offset = limit * (page - 1);
 
-  const resData = await CollectionLog.findAll({
+  const resData = await CollectionLogUser.findAll({
     attributes: {
       include: [
-        [Sequelize.col('unique_obtained'), 'obtained'],
-        [Sequelize.col('unique_items'), 'total'],
-        [Sequelize.col('user.username'), 'username'],
-        [Sequelize.col('user.account_type'), 'account_type'],
-      ]
+        [Sequelize.col('collectionLog.unique_obtained'), 'obtained'],
+        [Sequelize.col('collectionLog.unique_items'), 'total'],
+      ],
+      exclude: [
+        'id',
+        'runeliteId',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
     },
     include: [{
-      model: CollectionLogUser,
+      model: CollectionLog,
       attributes: [],
-      where: accountTypeFilter,
+      required: true,
     }],
-    order: [['unique_obtained', 'DESC']],
+    where: {
+      ...accountTypeFilter,
+      runeliteId: {
+        [Op.ne]: null,
+      },
+    },
+    order: [[Sequelize.literal('"collectionLog"."unique_obtained"'), 'DESC']],
     limit: 25,
     offset: offset,
   });
@@ -84,21 +96,32 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
   const limit = 25;
   const offset = limit * (page - 1);
 
-  const resData = await CollectionLog.findAll({
+  const resData = await CollectionLogUser.findAll({
     attributes: {
       include: [
-        [Sequelize.col('total_obtained'), 'obtained'],
-        [Sequelize.col('total_items'), 'total'],
-        [Sequelize.col('user.username'), 'username'],
-        [Sequelize.col('user.account_type'), 'account_type'],
-      ]
+        [Sequelize.col('collectionLog.total_obtained'), 'obtained'],
+        [Sequelize.col('collectionLog.total_items'), 'total'],
+      ],
+      exclude: [
+        'id',
+        'runeliteId',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
     },
     include: [{
-      model: CollectionLogUser,
+      model: CollectionLog,
       attributes: [],
-      where: accountTypeFilter,
+      required: true,
     }],
-    order: [['total_obtained', 'DESC']],
+    where: {
+      ...accountTypeFilter,
+      runeliteId: {
+        [Op.ne]: null,
+      },
+    },
+    order: [[Sequelize.literal('"collectionLog"."total_obtained"'), 'DESC']],
     limit: 25,
     offset: offset,
   });

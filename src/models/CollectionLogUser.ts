@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import {
   AllowNull,
   Column,
@@ -7,6 +8,7 @@ import {
   HasOne,
   Model,
   PrimaryKey,
+  Scopes,
   Table,
 } from 'sequelize-typescript';
 
@@ -20,6 +22,11 @@ import CollectionLog from './CollectionLog';
     'created_at',
     'updated_at',
   ]
+}))
+@Scopes(() => ({
+  hiscores: {
+    attributes: ['username', 'accountType'],
+  },
 }))
 @Table({
   tableName: 'collection_log_user',

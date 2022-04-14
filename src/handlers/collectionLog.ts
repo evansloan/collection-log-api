@@ -410,6 +410,7 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     group: ['item_id', 'name', 'obtained'],
     order: [
       [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'DESC'],
+      [Sequelize.fn('MAX', Sequelize.col('sequence')), 'DESC'],
     ],
     limit: 5,
   });
