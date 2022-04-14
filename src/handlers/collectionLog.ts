@@ -415,9 +415,15 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     limit: 5,
   });
 
+  const response = {
+    username: user.username,
+    account_type: user.accountType,
+    items: items,
+  }
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(items),
+    body: JSON.stringify(response),
   }
 }
