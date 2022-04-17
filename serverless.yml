@@ -41,7 +41,7 @@ provider:
 functions:
   createCollectionLog:
     handler: src/handlers/collectionLog.create
-    timeout: 25
+    timeout: 30
     events:
       - httpApi:
           path: /collectionlog
@@ -49,7 +49,7 @@ functions:
 
   getCollectionLog:
     handler: src/handlers/collectionLog.get
-    timeout: 25
+    timeout: 30
     events:
       - httpApi:
           path: /collectionlog/{id}
@@ -71,7 +71,7 @@ functions:
 
   updateCollectionLog:
     handler: src/handlers/collectionLog.update
-    timeout: 25
+    timeout: 30
     events:
       - httpApi:
           path: /collectionlog/{runelite_id}
