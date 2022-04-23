@@ -20,6 +20,14 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const body = JSON.parse(event.body as string);
 
+  if (body.runelite_id == '' || body.runelite_id == undefined || body.runelite_id == null) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: 'Invalid path parameters' }),
+    };
+  }
+
   const user = await CollectionLogUser.findOne({
     where: {
       runeliteId: body.runelite_id,
@@ -217,6 +225,14 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const runeliteId = event.pathParameters?.runelite_id as string;
   const body = JSON.parse(event.body as string);
+
+  if (runeliteId == '' || runeliteId == undefined || runeliteId == null) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: 'Invalid path parameters' }),
+    };
+  }
 
   const user = await CollectionLogUser.findOne({
     where: {
