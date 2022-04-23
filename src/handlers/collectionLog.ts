@@ -243,26 +243,26 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const logData = body.collection_log.tabs;
   const updatedItems: any = [];
   const updatedKillCounts: any = [];
+  const collectionLogEntries = await CollectionLogEntry.findAll({
+    include: [{
+      model: CollectionLogItem,
+      where: {
+        collectionLogId: user.collectionLog.id,
+      },
+      required: false,
+    }, {
+      model: CollectionLogKillCount,
+      where: {
+        collectionLogId: user.collectionLog.id,
+      },
+      required: false,
+    }],
+  });
 
   for (const tabName in logData) {
     for (const entryName in logData[tabName]) {
-      const entry = await CollectionLogEntry.findOne({
-        where: {
-          name: entryName,
-        },
-        include: [{
-          model: CollectionLogItem,
-          where: {
-            collectionLogId: user.collectionLog.id,
-          },
-          required: false,
-        }, {
-          model: CollectionLogKillCount,
-          where: {
-            collectionLogId: user.collectionLog.id,
-          },
-          required: false,
-        }],
+      const entry = collectionLogEntries.find((entry) => {
+        return entry.name == entryName;
       });
 
       const items: any = logData[tabName][entryName].items;
