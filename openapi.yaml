@@ -1,13 +1,29 @@
 openapi: "3.0.0"
 info:
-  title: Collection log API
-  version: '1.0'
+  version: "1.0"
+  title: Swagger Petstore
+  license:
+    name: MIT
+servers:
+  - url: https://api.collectionlog.net
 paths:
   /collectionlog/user/{username}:
     get:
+      summary: Get collection log by username
       operationId: getCollectionLogByUsername
-      summary: Get a specific collection log by username
+      tags:
+        - collection
+        - log
+        - username
+      parameters:
+        - name: username
+          in: path
+          description: Username of collection log owner
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: |-
-            Successful collection log request
+        "200":
+          description: A JSON representation of a collection log
+        "404":
+          description: A collection log with the provided username was not found
