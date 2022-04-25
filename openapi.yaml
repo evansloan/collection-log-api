@@ -1,9 +1,7 @@
 openapi: "3.0.0"
 info:
   version: "1.0"
-  title: Swagger Petstore
-  license:
-    name: MIT
+  title: Collection log API
 servers:
   - url: https://api.collectionlog.net
 paths:
