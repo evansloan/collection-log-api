@@ -7,8 +7,8 @@ import {
   DefaultScope,
   HasOne,
   Model,
+  Index,
   PrimaryKey,
-  Scopes,
   Table,
 } from 'sequelize-typescript';
 
@@ -23,11 +23,6 @@ import CollectionLog from './CollectionLog';
     'updated_at',
   ]
 }))
-@Scopes(() => ({
-  hiscores: {
-    attributes: ['username', 'accountType'],
-  },
-}))
 @Table({
   tableName: 'collection_log_user',
   underscored: true,
@@ -35,6 +30,7 @@ import CollectionLog from './CollectionLog';
 })
 class CollectionLogUser extends Model {
 
+  @Index
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)

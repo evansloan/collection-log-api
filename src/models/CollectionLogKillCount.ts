@@ -4,6 +4,7 @@ import {
   DataType,
   Default,
   ForeignKey,
+  Index,
   Model,
   PrimaryKey,
   Table,
@@ -19,11 +20,13 @@ import CollectionLogEntry from './CollectionLogEntry';
 })
 class CollectionLogKillCount extends Model {
 
+  @Index
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   id!: string;
 
+  @Index
   @ForeignKey(() => CollectionLog)
   @Column(DataType.UUID)
   collectionLogId!: string;

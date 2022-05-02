@@ -5,6 +5,7 @@ import {
   Default,
   ForeignKey,
   HasMany,
+  Index,
   Model,
   PrimaryKey,
   Table
@@ -23,6 +24,7 @@ import CollectionLogUser from './CollectionLogUser';
 })
 class CollectionLog extends Model {
 
+  @Index
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
