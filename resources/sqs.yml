@@ -1,0 +1,14 @@
+Resources:
+  CollectionLogUpdateSQSQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: collection-log-update-sqs-queue.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: true
+
+  CollectionLogEntryUpdateSQSQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: collection-log-entry-update-sqs-queue.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: true
