@@ -1,13 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
 
-import CollectionLog from '../models/CollectionLog';
-import CollectionLogEntry from '../models/CollectionLogEntry';
-import CollectionLogItem from '../models/CollectionLogItem';
-import CollectionLogKillCount from '../models/CollectionLogKillCount';
-import CollectionLogTab from '../models/CollectionLogTab';
-import CollectionLogUser from '../models/CollectionLogUser';
-
-export default async() => {
+const createConnection = () => {
   const db = new Sequelize({
     database: process.env.DB_NAME,
     dialect: 'postgres',
@@ -15,15 +8,9 @@ export default async() => {
     password: process.env.DB_PASS,
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT as string),
-    models: [
-      CollectionLog,
-      CollectionLogEntry,
-      CollectionLogItem, 
-      CollectionLogKillCount,
-      CollectionLogTab,
-      CollectionLogUser,
-    ],
   });
-  await db.authenticate();
+  
   return db;
 }
+
+export default createConnection();
