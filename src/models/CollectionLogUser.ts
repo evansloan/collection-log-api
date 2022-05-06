@@ -12,7 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 
-import CollectionLog from './CollectionLog';
+import { CollectionLog } from '@models/index';
 
 @DefaultScope(() => ({
   attributes: [

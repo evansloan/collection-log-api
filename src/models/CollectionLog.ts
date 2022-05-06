@@ -8,14 +8,16 @@ import {
   Index,
   Model,
   PrimaryKey,
-  Table
+  Table,
 } from 'sequelize-typescript';
 
-import CollectionLogEntry from './CollectionLogEntry';
-import CollectionLogItem from './CollectionLogItem';
-import CollectionLogKillCount from './CollectionLogKillCount';
-import CollectionLogTab from './CollectionLogTab';
-import CollectionLogUser from './CollectionLogUser';
+import {
+  CollectionLogEntry,
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+} from '@models/index';
 
 @Table({
   tableName: 'collection_log',

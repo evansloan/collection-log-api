@@ -2,9 +2,15 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
-import CollectionLog from '../models/CollectionLog';
-import CollectionLogUser from '../models/CollectionLogUser';
-import dbConnect from '../services/databaseService';
+import {
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+} from '@models/index';
+import db from '@services/DatabaseService';
 
 const headers = {
   'content-type': 'application/json',
@@ -19,9 +25,16 @@ const validAccountTypes = [
   'ULTIMATE_IRONMAN',
 ];
 
-export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  await dbConnect();
+db.addModels([
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem, 
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+]);
 
+export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   let accountType = event.queryStringParameters?.accountType?.toUpperCase();
 
   let accountTypeFilter = undefined;
@@ -77,8 +90,6 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 }
 
 export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  await dbConnect();
-
   let accountType = event.queryStringParameters?.accountType?.toUpperCase();
 
   let accountTypeFilter = undefined;

@@ -10,8 +10,10 @@ import {
   Table,
 } from 'sequelize-typescript';
 
-import CollectionLog from './CollectionLog';
-import CollectionLogEntry from './CollectionLogEntry';
+import {
+  CollectionLog,
+  CollectionLogEntry,
+} from '@models/index';
 
 @Table({
   tableName: 'collection_log_item',

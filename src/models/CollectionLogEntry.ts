@@ -11,9 +11,11 @@ import {
   Table
 } from 'sequelize-typescript';
 
-import CollectionLogItem from './CollectionLogItem';
-import CollectionLogKillCount from './CollectionLogKillCount';
-import CollectionLogTab from './CollectionLogTab';
+import {
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+} from '@models/index';
 
 @Table({
   tableName: 'collection_log_entry',

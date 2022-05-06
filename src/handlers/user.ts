@@ -1,15 +1,30 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-import CollectionLogUser from '../models/CollectionLogUser';
-import dbConnect from '../services/databaseService';
+import {
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+} from '@models/index';
+import db from '@services/DatabaseService';
 
 const headers = {
   'content-type': 'application/json',
   'Access-Control-Allow-Origin': '*',
 };
 
+db.addModels([
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem, 
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+]);
+
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  await dbConnect();
   const body = JSON.parse(event.body as string);
 
   const existingUser = await CollectionLogUser.findOne({ where: { 
@@ -42,7 +57,6 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 };
 
 export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  await dbConnect();
   const id = event.pathParameters?.id as string;
   const user = await CollectionLogUser.findByPk(id);
 
@@ -62,7 +76,6 @@ export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyR
 };
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  await dbConnect();
   const id = event.pathParameters?.id as string;
   const body = JSON.parse(event.body as string);
 

@@ -1,14 +1,16 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { Sequelize } from 'sequelize-typescript';
 
-import db from '@services/DatabaseService';
 
-import CollectionLog from '@models/CollectionLog';
-import CollectionLogEntry from '@models/CollectionLogEntry';
-import CollectionLogItem from '@models/CollectionLogItem';
-import CollectionLogKillCount from '@models/CollectionLogKillCount';
-import CollectionLogTab from '@models/CollectionLogTab';
-import CollectionLogUser from '@models/CollectionLogUser';
+import {
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+} from '@models/index';
+import db from '@services/DatabaseService';
 
 const headers = {
   'content-type': 'application/json',
