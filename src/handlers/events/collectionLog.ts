@@ -2,23 +2,16 @@ import { SQSEvent, APIGatewayProxyResult } from "aws-lambda";
 import { Sequelize } from 'sequelize-typescript';
 import { v4 } from 'uuid';
 
-import CollectionLog from '@models/CollectionLog';
-import CollectionLogEntry from '@models/CollectionLogEntry';
-import CollectionLogItem from '@models/CollectionLogItem';
-import CollectionLogKillCount from '@models/CollectionLogKillCount';
-import CollectionLogTab from '@models/CollectionLogTab';
-import CollectionLogUser from '@models/CollectionLogUser';
-
+import {
+  CollectionLog,
+  CollectionLogEntry,
+  CollectionLogItem,
+  CollectionLogKillCount,
+  CollectionLogTab,
+  CollectionLogUser,
+} from '@models/index';
+import db from '@services/DatabaseService';
 import { CollectionLogItemSQSMessageBody } from '@services/sqs/messages';
-
-const db = new Sequelize({
-  database: process.env.DB_NAME,
-  dialect: 'postgres',
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT as string),
-});
 
 db.addModels([
   CollectionLog,

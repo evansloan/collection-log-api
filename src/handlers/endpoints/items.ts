@@ -1,7 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { Sequelize } from 'sequelize-typescript';
 
-
 import {
   CollectionLog,
   CollectionLogEntry,
@@ -25,6 +24,55 @@ db.addModels([
   CollectionLogTab,
   CollectionLogUser,
 ]);
+
+export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const username = event.pathParameters?.username as string;
+
+  const user = await CollectionLogUser.findOne({
+    include: [CollectionLog],
+    where: Sequelize.where(Sequelize.fn('LOWER', Sequelize.col('username')), username.toLowerCase()),
+  });
+
+  if (!user?.collectionLog) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: `Collection log not found with username: ${username}` }),
+    };
+  }
+
+  const items = await CollectionLogItem.findAll({
+    attributes: [
+      [Sequelize.col('item_id'), 'itemId'],
+      [Sequelize.col('name'), 'name'],
+      [Sequelize.fn('MAX', Sequelize.col('quantity')), 'quantity'],
+      [Sequelize.col('obtained'), 'obtained'],
+      [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'obtainedAt'],
+    ],
+    where: {
+      collectionLogId: user.collectionLog.id,
+      obtained: true,
+    },
+    group: ['item_id', 'name', 'obtained'],
+    order: [
+      [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'DESC'],
+      [Sequelize.fn('MAX', Sequelize.col('sequence')), 'DESC'],
+    ],
+    limit: 5,
+  });
+
+  const response = {
+    username: user.username,
+    account_type: user.accountType,
+    items: items,
+  }
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(response),
+  };
+};
 
 export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const username = event.pathParameters?.username as string;

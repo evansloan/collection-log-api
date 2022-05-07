@@ -51,7 +51,7 @@ functions:
   # HTTP endpoint functions
 
   createCollectionLog:
-    handler: src/handlers/collectionLog.create
+    handler: src/handlers/endpoints/collectionlog.create
     timeout: 25
     events:
       - httpApi:
@@ -59,7 +59,7 @@ functions:
           method: post
 
   getCollectionLog:
-    handler: src/handlers/collectionLog.get
+    handler: src/handlers/endpoints/collectionlog.get
     timeout: 25
     events:
       - httpApi:
@@ -67,7 +67,7 @@ functions:
           method: get
 
   getCollectionLogByRuneliteId:
-    handler: src/handlers/collectionLog.getByRuneliteId
+    handler: src/handlers/endpoints/collectionlog.getByRuneliteId
     timeout: 25
     events:
       - httpApi:
@@ -75,7 +75,7 @@ functions:
           method: get
 
   getCollectionLogByUsername:
-    handler: src/handlers/collectionLog.getByUsername
+    handler: src/handlers/endpoints/collectionlog.getByUsername
     timeout: 25
     events:
       - httpApi:
@@ -83,7 +83,7 @@ functions:
           method: get
 
   updateCollectionLog:
-    handler: src/handlers/collectionLog.update
+    handler: src/handlers/endpoints/collectionlog.update
     timeout: 25
     memorySize: 2048
     events:
@@ -92,57 +92,57 @@ functions:
           method: put
 
   collectionLogExists:
-    handler: src/handlers/collectionLog.collectionLogExists
+    handler: src/handlers/endpoints/collectionlog.collectionLogExists
     events:
       - httpApi:
           path: /collectionlog/exists/{runeliteId}
           method: get
 
-  recentCollectionLogItems:
-    handler: src/handlers/collectionLog.recentItems
-    timeout: 25
-    events:
-      - httpApi:
-          path: /collectionlog/recent/{username}
-          method: get
-
   createUser:
-    handler: src/handlers/user.create
+    handler: src/handlers/endpoints/user.create
     events:
       - httpApi:
           path: /user
           method: post
   
   getUser:
-    handler: src/handlers/user.get
+    handler: src/handlers/endpoints/user.get
     events:
       - httpApi:
           path: /user/{id}
           method: get
 
   updateUser:
-    handler: src/handlers/user.update
+    handler: src/handlers/endpoints/user.update
     events:
       - httpApi:
           path: /user/{id}
           method: put
 
   getUniqueHiscores:
-    handler: src/handlers/hiscores.unique
+    handler: src/handlers/endpoints/hiscores.unique
     events:
       - httpApi:
           path: /hiscores/unique/{page}
           method: get
 
   getTotalHiscores:
-    handler: src/handlers/hiscores.total
+    handler: src/handlers/endpoints/hiscores.total
     events:
       - httpApi:
           path: /hiscores/total/{page}
           method: get
 
+  recentCollectionLogItems:
+    handler: src/handlers/endpoints/items.recentItems
+    timeout: 25
+    events:
+      - httpApi:
+          path: /items/recent/{username}
+          method: get
+
   getEntryItemsByUsername:
-    handler: src/handlers/items.getEntryItemsByUsername
+    handler: src/handlers/endpoints/items.getEntryItemsByUsername
     events:
       - httpApi:
           path: /items/user/{username}
