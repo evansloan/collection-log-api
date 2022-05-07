@@ -47,6 +47,11 @@ provider:
             - sqs:*
           Resource: !GetAtt CollectionLogUpdateSQSQueue.Arn
 
+        - Effect: Allow
+          Action:
+            - sqs:*
+          Resource: !GetAtt CollectionLogEntryUpdateSQSQueue.Arn
+
 functions:
   # HTTP endpoint functions
 
@@ -176,11 +181,13 @@ custom:
 
   dev:
     domainName: dev.api.collectionlog.net
+    updateCollectionLogQueue: !Ref CollectionLogUpdateSQSQueue
+    updateEntryQueue: !Ref CollectionLogEntryUpdateSQSQueue
 
   prod:
     domainName: api.collectionlog.net
     updateCollectionLogQueue: !Ref CollectionLogUpdateSQSQueue
-    updateEntryQueue: !Ref CollectionLogUpdateEntrySQSQueue
+    updateEntryQueue: !Ref CollectionLogEntryUpdateSQSQueue
 
   customDomain:
     domainName: ${self:custom.${self:provider.stage}.domainName}

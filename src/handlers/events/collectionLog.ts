@@ -50,7 +50,7 @@ export const updateCollectionLogEntry = async (event: SQSEvent): Promise<APIGate
   const sqsRecord = event.Records[0];
   const sqsMessage = JSON.parse(sqsRecord.body as string);
 
-  console.log(`Executing queued collection log entry ${sqsMessage.id} update.`, {
+  console.log(`Executing queued collection log entry ${sqsMessage.name} update.`, {
     messageId: sqsRecord.messageId,
   });
 

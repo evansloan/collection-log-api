@@ -8,6 +8,7 @@ interface CollectionLogItemSQSMessageBody {
 };
 
 interface CollectionLogEntrySQSMessageBody extends SQSMessageBody {
+  name: string;
   collectionLogId: string;
   items: CollectionLogItemSQSMessageBody[];
   killCounts: string[] | undefined,

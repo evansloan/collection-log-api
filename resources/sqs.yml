@@ -12,3 +12,12 @@ Resources:
       QueueName: collection-log-entry-update-sqs-queue.fifo
       FifoQueue: true
       ContentBasedDeduplication: true
+      RedrivePolicy: 
+        deadLetterTargetArn: !GetAtt CollectionLogEntryUpdateDLQ.Arn
+        maxReceiveCount: 5
+
+  CollectionLogEntryUpdateDLQ: 
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: collection-log-entry-update-dlq.fifo
+      FifoQueue: true

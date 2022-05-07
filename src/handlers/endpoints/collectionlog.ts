@@ -65,6 +65,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
+  console.log(`Starting create for user: ${user.username}`);
+
   const logData: CollectionLogData = body.collection_log;
 
   const collectionLog = await CollectionLog.create({
@@ -77,8 +79,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
-  const items: any = [];
-  const killCounts: any = [];
+  const sqs = new SQSService({ region: process.env.AWS_REGION });
 
   for (let tabName in logData.tabs) {
 
@@ -92,7 +93,6 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       tab = await CollectionLogTab.create({ name: tabName });
     }
 
-    const sqs = new SQSService({ region: process.env.AWS_REGION });
 
     for (const entryName in logData.tabs[tabName]) {
 
@@ -111,6 +111,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
       const entrySQSMessageBody = {
         id: entry.id,
+        name: entry.name,
         collectionLogId: collectionLog!.id,
         items: logData.tabs[tabName][entryName].items,
         killCounts: logData.tabs[tabName][entryName].kill_count,
@@ -227,6 +228,8 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
+  console.log(`Starting update for user: ${user.username}`);
+
   const sqs = new SQSService({ region: process.env.AWS_REGION });
 
   const logSQSBody = {
@@ -258,8 +261,11 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         };
       }
 
+      console.log(`${user.username} - ${entry.name}`);
+
       const entrySQSMessageBody = {
         id: entry.id,
+        name: entry.name,
         collectionLogId: user.collectionLog.id,
         items: logData.tabs[tabName][entryName].items,
         killCounts: logData.tabs[tabName][entryName].kill_count,
