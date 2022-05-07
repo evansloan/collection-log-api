@@ -151,13 +151,13 @@ functions:
   # SQS queue event functions
 
   collectionLogUpdateEvent:
-    handler: src/handlers/events/collectionLog.updateCollectionLog
+    handler: src/handlers/events/collectionlog.updateCollectionLog
     events:
       - sqs:
           arn: !GetAtt CollectionLogUpdateSQSQueue.Arn
 
   collectionLogEntryUpdateEvent:
-    handler: src/handlers/events/collectionLog.updateCollectionLogEntry
+    handler: src/handlers/events/collectionlog.updateCollectionLogEntry
     events:
       - sqs:
           arn: !GetAtt CollectionLogEntryUpdateSQSQueue.Arn
