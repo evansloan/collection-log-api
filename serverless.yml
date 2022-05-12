@@ -20,9 +20,6 @@ provider:
     DB_HOST: ${env:DB_HOST}
     DB_PORT: ${env:DB_PORT}
 
-    UPDATE_LOG_SQS_URL: ${self:custom.${self:provider.stage}.updateCollectionLogQueue}
-    UPDATE_ENTRY_SQS_URL: ${self:custom.${self:provider.stage}.updateEntryQueue}
-
   vpc:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
@@ -41,16 +38,6 @@ provider:
             - ec2:AssignPrivateIpAddresses
             - ec2:UnassignPrivateIpAddresses
           Resource: '*'
-
-        - Effect: Allow
-          Action:
-            - sqs:*
-          Resource: !GetAtt CollectionLogUpdateSQSQueue.Arn
-
-        - Effect: Allow
-          Action:
-            - sqs:*
-          Resource: !GetAtt CollectionLogEntryUpdateSQSQueue.Arn
 
 functions:
   # HTTP endpoint functions
@@ -153,41 +140,18 @@ functions:
           path: /items/user/{username}
           method: get
 
-  # SQS queue event functions
-
-  collectionLogUpdateEvent:
-    handler: src/handlers/events/collectionlog.updateCollectionLog
-    events:
-      - sqs:
-          arn: !GetAtt CollectionLogUpdateSQSQueue.Arn
-
-  collectionLogEntryUpdateEvent:
-    handler: src/handlers/events/collectionlog.updateCollectionLogEntry
-    events:
-      - sqs:
-          arn: !GetAtt CollectionLogEntryUpdateSQSQueue.Arn
-
 plugins:
   - serverless-plugin-typescript
   - serverless-tscpaths
   - serverless-domain-manager
-  - serverless-offline-sqs
   - serverless-offline
  
 custom:
-  local:
-    updateCollectionLogQueue: '${self:custom.serverless-offline-sqs.endpoint}/queue/collection-log-update-sqs-queue.fifo'
-    updateEntryQueue: '${self:custom.serverless-offline-sqs.endpoint}/queue/collection-log-entry-update-sqs-queue.fifo'
-
   dev:
     domainName: dev.api.collectionlog.net
-    updateCollectionLogQueue: !Ref CollectionLogUpdateSQSQueue
-    updateEntryQueue: !Ref CollectionLogEntryUpdateSQSQueue
 
   prod:
     domainName: api.collectionlog.net
-    updateCollectionLogQueue: !Ref CollectionLogUpdateSQSQueue
-    updateEntryQueue: !Ref CollectionLogEntryUpdateSQSQueue
 
   customDomain:
     domainName: ${self:custom.${self:provider.stage}.domainName}
@@ -198,17 +162,8 @@ custom:
     apiType: http
     endpointType: regional
 
-  serverless-offline-sqs:
-    skipCacheInvalidation: false
-    autoCreate: true
-    endpoint: http://0.0.0.0:9324
-    region: ${self:provider.region}
-    accessKeyId: root
-    secretAccessKey: root
-
 resources:
   - ${file(resources/vpc.yml)}
   - ${file(resources/securitygroup.yml)}
   - ${file(resources/route.yml)}
   - ${file(resources/rds.yml)}
-  - ${file(resources/sqs.yml)}

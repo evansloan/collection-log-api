@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { Sequelize } from 'sequelize-typescript';
+import { v4 } from 'uuid';
 
 import { CollectionLogData } from '@datatypes/CollectionLogData';
 import {
@@ -11,8 +12,6 @@ import {
   CollectionLogUser
 } from '@models/index';
 import db from '@services/DatabaseService';
-import SQSService from '@services/sqs/SQSService';
-import { CollectionLogSQS, CollectionLogEntrySQS } from '@services/sqs/messages';
 
 const headers = {
   'content-type': 'application/json',
@@ -74,12 +73,14 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     uniqueItems: logData.unique_items,
     totalObtained: logData.total_obtained,
     totalItems: logData.total_items,
-    userId: user.id 
+    userId: user.id,
+    isUpdating: true,
   });
   const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
-  const sqs = new SQSService({ region: process.env.AWS_REGION });
+  const itemsToUpdate: any = [];
+  const kcToUpdate: any = [];
 
   for (let tabName in logData.tabs) {
 
@@ -92,7 +93,6 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     if (!tab) {
       tab = await CollectionLogTab.create({ name: tabName });
     }
-
 
     for (const entryName in logData.tabs[tabName]) {
 
@@ -109,23 +109,69 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         });
       }
 
-      const entrySQSMessageBody = {
-        id: entry.id,
-        name: entry.name,
-        collectionLogId: collectionLog!.id,
-        items: logData.tabs[tabName][entryName].items,
-        killCounts: logData.tabs[tabName][entryName].kill_count,
-      }
-      const entrySQSMessage = new CollectionLogEntrySQS(entrySQSMessageBody);
-      const entrySQSResponse = sqs.queueUpdate(entrySQSMessage);
-      console.log(entrySQSResponse);
+      const itemData = logData.tabs[tabName][entryName].items;
+    
+      itemData.forEach((item, i: number) => {
+        const obtainedAt = item.obtained ? new Date().toISOString() : null;
+        itemsToUpdate.push({
+          id: v4(),
+          collectionLogId: collectionLog?.id,
+          collectionLogEntryId: entry?.id,
+          itemId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          obtained: item.obtained,
+          sequence: i,
+          obtainedAt: obtainedAt,
+        });
+      });
+
+      const killCountData = logData.tabs[tabName][entryName].kill_count;
+    
+      killCountData?.forEach((killCount: string) => {
+        const killCountSplit = killCount.split(': ');
+        const name = killCountSplit[0];
+        const amount = killCountSplit[1];
+    
+        kcToUpdate.push({
+          id: v4(),
+          collectionLogId: collectionLog?.id,
+          collectionLogEntryId: entry?.id,
+          name: name,
+          amount: amount,
+        });
+      });
     }
   }
+
+  await CollectionLogItem.bulkCreate(itemsToUpdate, {
+    updateOnDuplicate: [
+      'name',
+      'quantity',
+      'obtained',
+      'sequence',
+      'obtainedAt',
+      'updatedAt',
+    ],
+  });
+
+  await CollectionLogKillCount.bulkCreate(kcToUpdate, {
+    updateOnDuplicate: [
+      'amount',
+      'updatedAt',
+    ]
+  });
+
+  await CollectionLog.update({
+    isUpdating: false,
+  }, {
+    where: { id: user.collectionLog?.id },
+  });
 
   return {
     statusCode: 201,
     headers,
-    body: JSON.stringify({}),
+    body: JSON.stringify({ message: 'Collection log created'}),
   };
 };
 
@@ -228,24 +274,40 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  console.log(`Starting update for user: ${user.username}`);
+  if (user.collectionLog.isUpdating) {
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ message: `Collection log update currently in progress` }),
+    };
+  }
 
-  const sqs = new SQSService({ region: process.env.AWS_REGION });
-
-  const logSQSBody = {
-    id: user.collectionLog.id,
-    itemCounts: {
-      uniqueObtained: logData.unique_obtained,
-      uniqueItems: logData.unique_items,
-      totalObtained: logData.total_obtained,
-      totalItems: logData.total_items,
-    },
+  const itemCounts = {
+    uniqueObtained: logData.unique_obtained,
+    uniqueItems: logData.unique_items,
+    totalObtained: logData.total_obtained,
+    totalItems: logData.total_items,
+    isUpdating: true,
   };
-  const logSQSMessage = new CollectionLogSQS(logSQSBody);
-  const logSQSResponse = sqs.queueUpdate(logSQSMessage);
-  console.log(logSQSResponse);
+  await CollectionLog.update(itemCounts, {
+    where: { id: user.collectionLog?.id },
+  });
 
   const collectionLogEntries = await CollectionLogEntry.findAll();
+
+  const existingItems = await CollectionLogItem.findAll({
+    where: {
+      collectionLogId: user.collectionLog.id,
+    },
+  });
+  const existingKillCounts = await CollectionLogKillCount.findAll({
+    where: {
+      collectionLogId: user.collectionLog.id,
+    },
+  });
+
+  const itemsToUpdate: any = [];
+  const kcToUpdate: any = [];
 
   for (const tabName in logData.tabs) {
     for (const entryName in logData.tabs[tabName]) {
@@ -261,25 +323,98 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         };
       }
 
-      console.log(`${user.username} - ${entry.name}`);
+      const itemData = logData.tabs[tabName][entryName].items;
+    
+      itemData.forEach((item, i: number) => {
+        const existingItem = existingItems.find((ei) => {
+          return ei.itemId == item.id && ei.collectionLogEntryId == entry.id;
+        });
+    
+        const isUpdated = itemsToUpdate.find((ui: any) => {
+          return ui.itemId == item.id && ui.collectionLogEntryId == entry.id;
+        });
+    
+        if (isUpdated) {
+          return;
+        }
+    
+        const dbId = existingItem?.id ?? v4();
+        const newObtained = !existingItem?.obtained && item.obtained;
+        const obtainedAt = newObtained ? new Date().toISOString() : existingItem?.obtainedAt;
+    
+        itemsToUpdate.push({
+          id: dbId,
+          collectionLogId: user.collectionLog?.id,
+          collectionLogEntryId: entry.id,
+          itemId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          obtained: item.obtained,
+          sequence: i,
+          obtainedAt: obtainedAt,
+        });
+      });
 
-      const entrySQSMessageBody = {
-        id: entry.id,
-        name: entry.name,
-        collectionLogId: user.collectionLog.id,
-        items: logData.tabs[tabName][entryName].items,
-        killCounts: logData.tabs[tabName][entryName].kill_count,
-      }
-      const entrySQSMessage = new CollectionLogEntrySQS(entrySQSMessageBody);
-      const entrySQSResponse = sqs.queueUpdate(entrySQSMessage);
-      console.log(entrySQSResponse);
+      const killCountData = logData.tabs[tabName][entryName].kill_count;
+    
+      killCountData?.forEach((killCount: string) => {
+        const killCountSplit = killCount.split(': ');
+        const name = killCountSplit[0];
+        const amount = killCountSplit[1];
+    
+        const existingKc = existingKillCounts.find((ekc) => {
+          return ekc.name == name;
+        });
+    
+        const isUpdated = kcToUpdate.find((ukc: any) => {
+          return ukc.name == name;
+        });
+    
+        if (isUpdated) {
+          return;
+        }
+    
+        const dbId = existingKc?.id ?? v4();
+    
+        kcToUpdate.push({
+          id: dbId,
+          collectionLogId: user.collectionLog?.id,
+          collectionLogEntryId: entry.id,
+          name: name,
+          amount: amount,
+        });
+      });
     }
   }
+    
+  await CollectionLogItem.bulkCreate(itemsToUpdate, {
+    updateOnDuplicate: [
+      'name',
+      'quantity',
+      'obtained',
+      'sequence',
+      'obtainedAt',
+      'updatedAt',
+    ],
+  });
+
+  await CollectionLogKillCount.bulkCreate(kcToUpdate, {
+    updateOnDuplicate: [
+      'amount',
+      'updatedAt',
+    ]
+  });
+
+  await CollectionLog.update({
+    isUpdating: false,
+  }, {
+    where: { id: user.collectionLog?.id },
+  });
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({}),
+    body: JSON.stringify({ message: 'Collection log updated' }),
   };
 };
 

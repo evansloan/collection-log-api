@@ -48,6 +48,10 @@ class CollectionLog extends Model {
   @Column
   totalItems!: number;
 
+  @Default(false)
+  @Column
+  isUpdating!: boolean;
+
   @ForeignKey(() => CollectionLogUser)
   @Column(DataType.UUID)
   userId!: string;
