@@ -79,8 +79,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
-  const itemsToUpdate: any = [];
-  const kcToUpdate: any = [];
+  const itemsToCreate: any = [];
+  const kcToCreate: any = [];
 
   for (let tabName in logData.tabs) {
 
@@ -113,7 +113,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     
       itemData.forEach((item, i: number) => {
         const obtainedAt = item.obtained ? new Date().toISOString() : null;
-        itemsToUpdate.push({
+        itemsToCreate.push({
           id: v4(),
           collectionLogId: collectionLog?.id,
           collectionLogEntryId: entry?.id,
@@ -133,7 +133,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const name = killCountSplit[0];
         const amount = killCountSplit[1];
     
-        kcToUpdate.push({
+        kcToCreate.push({
           id: v4(),
           collectionLogId: collectionLog?.id,
           collectionLogEntryId: entry?.id,
@@ -144,7 +144,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  await CollectionLogItem.bulkCreate(itemsToUpdate, {
+  await CollectionLogItem.bulkCreate(itemsToCreate, {
     updateOnDuplicate: [
       'name',
       'quantity',
@@ -155,7 +155,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     ],
   });
 
-  await CollectionLogKillCount.bulkCreate(kcToUpdate, {
+  await CollectionLogKillCount.bulkCreate(kcToCreate, {
     updateOnDuplicate: [
       'amount',
       'updatedAt',
@@ -282,14 +282,14 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  const itemCounts = {
+  const logUpdateData = {
     uniqueObtained: logData.unique_obtained,
     uniqueItems: logData.unique_items,
     totalObtained: logData.total_obtained,
     totalItems: logData.total_items,
     isUpdating: true,
   };
-  await CollectionLog.update(itemCounts, {
+  await CollectionLog.update(logUpdateData, {
     where: { id: user.collectionLog?.id },
   });
 
