@@ -6,14 +6,14 @@ interface CollectionLogItemData {
 };
 
 interface CollectionLogEntryData {
-  [key: string]: {
+  [entryName: string]: {
     items: CollectionLogItemData[],
     kill_count: string[] | undefined,
   }
 };
 
 interface CollectionLogTabData {
-  [key: string]: CollectionLogEntryData
+  [tabName: string]: CollectionLogEntryData
 };
 
 interface CollectionLogData {

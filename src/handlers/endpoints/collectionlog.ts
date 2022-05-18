@@ -11,7 +11,7 @@ import {
   CollectionLogTab,
   CollectionLogUser
 } from '@models/index';
-import db from '@services/DatabaseService';
+import db from '@services/database';
 
 const headers = {
   'content-type': 'application/json',
@@ -340,7 +340,15 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     
         const dbId = existingItem?.id ?? v4();
         const newObtained = !existingItem?.obtained && item.obtained;
-        const obtainedAt = newObtained ? new Date().toISOString() : existingItem?.obtainedAt;
+        const newUnObtained = existingItem?.obtained && !item.obtained;
+
+        let obtainedAt: Date|string|undefined = existingItem?.obtainedAt;
+        if (newObtained) {
+          obtainedAt = new Date().toISOString();
+        }
+        if (newUnObtained) {
+          obtainedAt = undefined
+        }
     
         itemsToUpdate.push({
           id: dbId,

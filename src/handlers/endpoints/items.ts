@@ -9,7 +9,7 @@ import {
   CollectionLogTab,
   CollectionLogUser,
 } from '@models/index';
-import db from '@services/DatabaseService';
+import db from '@services/database';
 
 const headers = {
   'content-type': 'application/json',
