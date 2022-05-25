@@ -46,6 +46,9 @@ class CollectionLogUser extends Model {
   @Column
   runeliteId?: string;
 
+  @Column
+  accountHash?: number;
+
   @HasOne(() => CollectionLog)
   collectionLog?: CollectionLog;
 }

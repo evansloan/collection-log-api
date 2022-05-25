@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
+import { CollectionLogUserData } from '@datatypes/CollectionLogUserData';
 import {
   CollectionLog,
   CollectionLogEntry,
@@ -27,15 +28,46 @@ db.addModels([
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body as string);
 
-  const existingUser = await CollectionLogUser.findOne({ where: { 
-    runeliteId: body.runelite_id 
-  }});
+  if (!body.account_hash && !body.runelite_id) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'Invalid post body' }),
+    };
+  }
+
+  let existingUser = null;
+
+  // TODO: replace runeliteId permenantly with accountHash
+  if (body.account_hash) {
+    existingUser = await CollectionLogUser.findOne({
+      where: {
+        accountHash: body.account_hash,
+      },
+    });
+  }
+
+  if (!existingUser && body.runelite_id) {
+    existingUser = await CollectionLogUser.findOne({
+      where: {
+        runeliteId: body.runelite_id,
+      },
+    });
+  }
 
   if (existingUser) {
-    await existingUser.update({
+    let updateData: CollectionLogUserData = {
       username: body.username,
       accountType: body.account_type,
-    });
+      isFemale: body.is_female,
+    };
+
+    if (!existingUser.accountHash && body.account_hash) {
+      updateData.accountHash = body.account_hash;
+    }
+
+    await existingUser.update(updateData);
+
     return {
       statusCode: 200,
       headers,
@@ -47,6 +79,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     username: body.username,
     accountType: body.account_type,
     runeliteId: body.runelite_id,
+    accountHash: body.account_hash,
+    isFemale: body.is_female,
   });
 
   return {

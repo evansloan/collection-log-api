@@ -30,18 +30,21 @@ db.addModels([
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body as string);
 
-  if (!body.runelite_id) {
+  if (!body.runelite_id && !body.account_hash) {
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: 'Invalid path parameters' }),
+      body: JSON.stringify({ error: 'Invalid post body' }),
     };
   }
 
-  const user = await CollectionLogUser.findOne({
-    where: {
-      runeliteId: body.runelite_id,
-    },
+  // TODO: replace runeliteId permenantly with accountHash
+  const accountHashWhere = { accountHash: body.account_hash };
+  const runeliteIdWhere = { runeliteId: body.runelite_id };
+  const existingUserWhere = body.account_hash != null ? accountHashWhere : runeliteIdWhere;
+
+  let user = await CollectionLogUser.findOne({
+    where: existingUserWhere,
     include: [CollectionLog],
   });
 
@@ -165,7 +168,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await CollectionLog.update({
     isUpdating: false,
   }, {
-    where: { id: user.collectionLog?.id },
+    where: { id: collectionLog?.id },
   });
 
   return {
@@ -248,21 +251,21 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const runeliteId = event.pathParameters?.runelite_id as string;
+  // TODO: replace runeliteId permenantly with accountHash
+  const accountHash = parseInt(runeliteId);
   const body = JSON.parse(event.body as string);
   const logData: CollectionLogData = body.collection_log;
 
-  if (!runeliteId) {
+  if (!runeliteId && !accountHash) {
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: 'Invalid path parameters' }),
+      body: JSON.stringify({ error: 'Invalid post body' }),
     };
   }
 
-  const user = await CollectionLogUser.findOne({
-    where: {
-      runeliteId: runeliteId
-    },
+  let user = await CollectionLogUser.findOne({
+    where: !isNaN(accountHash) ? { accountHash } : { runeliteId },
     include: [CollectionLog]
   });
 
@@ -352,7 +355,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     
         itemsToUpdate.push({
           id: dbId,
-          collectionLogId: user.collectionLog?.id,
+          collectionLogId: user?.collectionLog?.id,
           collectionLogEntryId: entry.id,
           itemId: item.id,
           name: item.name,
@@ -386,7 +389,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     
         kcToUpdate.push({
           id: dbId,
-          collectionLogId: user.collectionLog?.id,
+          collectionLogId: user?.collectionLog?.id,
           collectionLogEntryId: entry.id,
           name: name,
           amount: amount,
@@ -428,11 +431,11 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const runeliteId = event.pathParameters?.runeliteId as string;
+  const accountHash = parseInt(runeliteId);
+  const useAccountHash = !isNaN(accountHash);
 
   const user = await CollectionLogUser.findOne({
-    where: {
-      runeliteId: runeliteId,
-    },
+    where: useAccountHash ? { accountHash } : { runeliteId },
     include: [CollectionLog],
   });
 
