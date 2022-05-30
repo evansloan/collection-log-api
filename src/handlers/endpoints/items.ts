@@ -43,11 +43,11 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
 
   const items = await CollectionLogItem.findAll({
     attributes: [
-      [Sequelize.col('item_id'), 'itemId'],
+      [Sequelize.col('item_id'), 'id'],
       [Sequelize.col('name'), 'name'],
       [Sequelize.fn('MAX', Sequelize.col('quantity')), 'quantity'],
       [Sequelize.col('obtained'), 'obtained'],
-      [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'obtainedAt'],
+      [Sequelize.fn('MAX', Sequelize.col('obtained_at')), 'obtained_at'],
     ],
     where: {
       collectionLogId: user.collectionLog.id,

@@ -61,6 +61,8 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       exclude: [
         'id',
         'runeliteId',
+        'accountHash',
+        'isFemale',
         'createdAt',
         'updatedAt',
         'deletedAt',
