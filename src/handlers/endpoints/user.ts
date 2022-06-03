@@ -40,9 +40,10 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // TODO: replace runeliteId permenantly with accountHash
   if (body.account_hash) {
+    const accountHash = (body.account_hash as bigint).toString();
     existingUser = await CollectionLogUser.findOne({
       where: {
-        accountHash: body.account_hash,
+        accountHash,
       },
     });
   }
@@ -63,8 +64,10 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
 
     if (!existingUser.accountHash && body.account_hash) {
-      updateData.accountHash = body.account_hash;
+      updateData.accountHash = (body.account_hash as bigint).toString();
     }
+
+    console.log(`EXISTING USER ${existingUser.username} ${body.account_hash}`);
 
     await existingUser.update(updateData);
 
