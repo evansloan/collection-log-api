@@ -67,7 +67,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  console.log(`Starting create for user: ${user.username}`);
+  console.log(`STARTING CREATE FOR USER: ${user.username}`);
 
   const logData: CollectionLogData = body.collection_log;
 
@@ -252,7 +252,7 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const runeliteId = event.pathParameters?.runelite_id as string;
   // TODO: replace runeliteId permenantly with accountHash
-  const accountHash = parseInt(runeliteId);
+  const accountHash = Number(runeliteId);
   const body = JSON.parse(event.body as string);
   const logData: CollectionLogData = body.collection_log;
 
@@ -265,7 +265,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   let user = await CollectionLogUser.findOne({
-    where: !isNaN(accountHash) ? { accountHash } : { runeliteId },
+    where: !isNaN(accountHash) ? { accountHash: runeliteId } : { runeliteId },
     include: [CollectionLog]
   });
 
@@ -285,6 +285,8 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
+  console.log('STARTING UPDATE FOR:', user.username);
+
   const logUpdateData = {
     uniqueObtained: logData.unique_obtained,
     uniqueItems: logData.unique_items,
@@ -296,6 +298,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     where: { id: user.collectionLog?.id },
   });
 
+  const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
   const existingItems = await CollectionLogItem.findAll({
@@ -313,37 +316,40 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const kcToUpdate: any = [];
 
   for (const tabName in logData.tabs) {
+    const tab = collectionLogTabs.find((tab) => tab.name == tabName);
     for (const entryName in logData.tabs[tabName]) {
-      const entry = collectionLogEntries.find((entry: CollectionLogEntry) => {
+      let entry = collectionLogEntries.find((entry: CollectionLogEntry) => {
         return entry.name == entryName;
       });
 
       if (!entry) {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ error: `Unable to find existing collection log entry with name ${entryName}` }),
-        };
+        entry = await CollectionLogEntry.create({
+          collectionLogTabId: tab!.id,
+          name: entryName,
+        });
       }
 
       const itemData = logData.tabs[tabName][entryName].items;
     
-      itemData.forEach((item, i: number) => {
+      itemData.forEach((item, i) => {
         const existingItem = existingItems.find((ei) => {
-          return ei.itemId == item.id && ei.collectionLogEntryId == entry.id;
+          return ei.itemId == item.id && ei.collectionLogEntryId == entry?.id;
         });
     
         const isUpdated = itemsToUpdate.find((ui: any) => {
-          return ui.itemId == item.id && ui.collectionLogEntryId == entry.id;
+          return ui.itemId == item.id && ui.collectionLogEntryId == entry?.id;
         });
     
         if (isUpdated) {
           return;
         }
-    
+
         const dbId = existingItem?.id ?? v4();
         const newObtained = !existingItem?.obtained && item.obtained;
         const newUnObtained = existingItem?.obtained && !item.obtained;
+        const newQuantity = existingItem?.quantity != item.quantity;
+
+        const shouldUpdate = newObtained || newUnObtained || newQuantity;
 
         let obtainedAt: Date|string|undefined = existingItem?.obtainedAt;
         if (newObtained) {
@@ -352,18 +358,20 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         if (newUnObtained) {
           obtainedAt = undefined
         }
-    
-        itemsToUpdate.push({
-          id: dbId,
-          collectionLogId: user?.collectionLog?.id,
-          collectionLogEntryId: entry.id,
-          itemId: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          obtained: item.obtained,
-          sequence: i,
-          obtainedAt: obtainedAt,
-        });
+
+        if (shouldUpdate) {
+          itemsToUpdate.push({
+            id: dbId,
+            collectionLogId: user?.collectionLog?.id,
+            collectionLogEntryId: entry?.id,
+            itemId: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            obtained: item.obtained,
+            sequence: i,
+            obtainedAt: obtainedAt,
+          });
+        }
       });
 
       const killCountData = logData.tabs[tabName][entryName].kill_count;
@@ -371,14 +379,14 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       killCountData?.forEach((killCount: string) => {
         const killCountSplit = killCount.split(': ');
         const name = killCountSplit[0];
-        const amount = killCountSplit[1];
+        const amount = Number(killCountSplit[1]);
     
         const existingKc = existingKillCounts.find((ekc) => {
-          return ekc.name == name;
+          return ekc.name == name && ekc.collectionLogEntryId == entry?.id;
         });
     
         const isUpdated = kcToUpdate.find((ukc: any) => {
-          return ukc.name == name;
+          return ukc.name == name && ukc.collectionLogId == entry?.id;
         });
     
         if (isUpdated) {
@@ -386,14 +394,17 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         }
     
         const dbId = existingKc?.id ?? v4();
-    
-        kcToUpdate.push({
-          id: dbId,
-          collectionLogId: user?.collectionLog?.id,
-          collectionLogEntryId: entry.id,
-          name: name,
-          amount: amount,
-        });
+        const shouldUpdate = existingKc?.amount != amount;
+
+        if (shouldUpdate) {
+          kcToUpdate.push({
+            id: dbId,
+            collectionLogId: user?.collectionLog?.id,
+            collectionLogEntryId: entry?.id,
+            name: name,
+            amount: amount,
+          });
+      }
       });
     }
   }
@@ -431,11 +442,13 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const runeliteId = event.pathParameters?.runeliteId as string;
-  const accountHash = parseInt(runeliteId);
+  const accountHash = Number(runeliteId);
   const useAccountHash = !isNaN(accountHash);
 
+  console.log(`Finding collection log using ${useAccountHash ? 'account_hash' : 'runelite_id'}: ${useAccountHash ? accountHash : runeliteId}`);
+
   const user = await CollectionLogUser.findOne({
-    where: useAccountHash ? { accountHash } : { runeliteId },
+    where: useAccountHash ? { accountHash: runeliteId } : { runeliteId },
     include: [CollectionLog],
   });
 

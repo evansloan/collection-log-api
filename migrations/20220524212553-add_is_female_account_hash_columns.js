@@ -8,7 +8,7 @@ module.exports = {
     });
 
     await queryInterface.addColumn('collection_log_user', 'account_hash', {
-      type: Sequelize.BIGINT,
+      type: Sequelize.STRING,
     });
   },
 

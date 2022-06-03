@@ -76,7 +76,7 @@ functions:
 
   updateCollectionLog:
     handler: src/handlers/endpoints/collectionlog.update
-    timeout: 25
+    timeout: 29
     memorySize: 2048
     events:
       - httpApi:

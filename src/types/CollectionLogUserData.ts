@@ -1,5 +1,5 @@
 interface CollectionLogUserData {
-  accountHash?: number;
+  accountHash?: string;
   accountType: string;
   isFemale: boolean;
   runeliteId?: string;
