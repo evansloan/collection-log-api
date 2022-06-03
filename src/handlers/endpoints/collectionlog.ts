@@ -30,6 +30,7 @@ db.addModels([
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body as string);
 
+
   if (!body.runelite_id && !body.account_hash) {
     return {
       statusCode: 404,
@@ -38,13 +39,11 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  // TODO: replace runeliteId permenantly with accountHash
-  const accountHashWhere = { accountHash: body.account_hash };
-  const runeliteIdWhere = { runeliteId: body.runelite_id };
-  const existingUserWhere = body.account_hash != null ? accountHashWhere : runeliteIdWhere;
+  const runeliteId = body.runelite_id;
+  const useAccountHash = !isNaN(Number(runeliteId));
 
   let user = await CollectionLogUser.findOne({
-    where: existingUserWhere,
+    where: useAccountHash ? { accountHash: runeliteId } : { runeliteId },
     include: [CollectionLog],
   });
 
