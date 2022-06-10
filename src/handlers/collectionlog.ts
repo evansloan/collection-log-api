@@ -30,7 +30,6 @@ db.addModels([
 export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const body = JSON.parse(event.body as string);
 
-
   if (!body.runelite_id && !body.account_hash) {
     return {
       statusCode: 404,
@@ -66,7 +65,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  console.log(`STARTING CREATE FOR USER: ${user.username}`);
+  console.log(`STARTING COLLECTION LOG CREATE FOR USER: ${user.username}`);
 
   const logData: CollectionLogData = body.collection_log;
 
@@ -170,59 +169,17 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     where: { id: collectionLog?.id },
   });
 
+  const response = {
+    username: user.username,
+    message: 'Collection log created',
+  };
+
   return {
     statusCode: 201,
     headers,
-    body: JSON.stringify({ message: 'Collection log created'}),
+    body: JSON.stringify(response),
   };
 };
-
-export const get = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const id = event.pathParameters?.id as string;
-  const collectionLog = await CollectionLog.findByPk(id);
-
-  if (!collectionLog) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({ error: `Collection log not found with ID: ${id}` }),
-    };
-  }
-
-  const resData = await collectionLog.jsonData();
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(resData),
-  };
-};
-
-export const getByRuneliteId = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const runeliteId = event.pathParameters?.runelite_id as string;
-  const user = await CollectionLogUser.findOne({
-    where: {
-      runeliteId: runeliteId,
-    },
-    include: [CollectionLog],
-  });
-
-  if (!user?.collectionLog) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({ error: `Collection log not found with runelite_id: ${runeliteId}` }),
-    };
-  }
-
-  const resData = await user.collectionLog.jsonData();
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(resData),
-  };
-}
 
 export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const username = event.pathParameters?.username as string;
@@ -284,7 +241,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  console.log('STARTING UPDATE FOR:', user.username);
+  console.log('STARTING COLLECTION LOG UPDATE FOR:', user.username);
 
   const logUpdateData = {
     uniqueObtained: logData.unique_obtained,
@@ -444,16 +401,28 @@ export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<
   const accountHash = Number(runeliteId);
   const useAccountHash = !isNaN(accountHash);
 
-  console.log(`Finding collection log using ${useAccountHash ? 'account_hash' : 'runelite_id'}: ${useAccountHash ? accountHash : runeliteId}`);
+  console.log(`FINDING EXISTING COLLECTION LOG FOR ${useAccountHash ? 'account_hash' : 'runelite_id'} ${runeliteId}`);
 
   const user = await CollectionLogUser.findOne({
     where: useAccountHash ? { accountHash: runeliteId } : { runeliteId },
     include: [CollectionLog],
   });
 
+  const exists = user?.collectionLog ? true : false;
+
+  console.log(`EXISTING LOG EXISTS: ${exists}`);
+
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ exists: user?.collectionLog ? true : false }),
+    body: JSON.stringify({ exists }),
+  }
+}
+
+export const ping = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({}),
   }
 }

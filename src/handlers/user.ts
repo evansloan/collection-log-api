@@ -36,6 +36,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
+  console.log(`STARTING USER CREATE FOR ${body.username}`);
+
   let existingUser = null;
 
   // TODO: replace runeliteId permenantly with accountHash
@@ -49,6 +51,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   if (!existingUser && body.runelite_id) {
+    console.log(`EXISTING USER FOR ${body.username} NOT FOUND WITH account_hash. TRYING runelite_id`);
     existingUser = await CollectionLogUser.findOne({
       where: {
         runeliteId: body.runelite_id,
@@ -56,7 +59,18 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     });
   }
 
+  if (!existingUser) {
+    console.log(`EXISTING USER FOR ${body.username} NOT FOUND WITH account_hash OR runelite_id. TRYING username`);
+    existingUser = await CollectionLogUser.findOne({
+      where: {
+        username: body.username,
+      },
+    });
+  }
+
   if (existingUser) {
+    console.log(`EXISTING USER FOR ${body.username} FOUND. STARTING USER UPDATE`);
+
     let updateData: CollectionLogUserData = {
       username: body.username,
       accountType: body.account_type,
@@ -67,8 +81,6 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       updateData.accountHash = (body.account_hash as bigint).toString();
     }
 
-    console.log(`EXISTING USER ${existingUser.username} ${body.account_hash}`);
-
     await existingUser.update(updateData);
 
     return {
@@ -77,6 +89,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       body: JSON.stringify(existingUser),
     }
   }
+
+  console.log(`EXISTING USER FOR ${body.username} NOT FOUND. STARTING USER CREATE`);
 
   const user = await CollectionLogUser.create({
     username: body.username,
