@@ -9,7 +9,7 @@ import {
   CollectionLogItem,
   CollectionLogKillCount,
   CollectionLogTab,
-  CollectionLogUser
+  CollectionLogUser,
 } from '@models/index';
 import db from '@services/database';
 
@@ -21,7 +21,7 @@ const headers = {
 db.addModels([
   CollectionLog,
   CollectionLogEntry,
-  CollectionLogItem, 
+  CollectionLogItem,
   CollectionLogKillCount,
   CollectionLogTab,
   CollectionLogUser,
@@ -41,7 +41,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const runeliteId = body.runelite_id;
   const useAccountHash = !isNaN(Number(runeliteId));
 
-  let user = await CollectionLogUser.findOne({
+  const user = await CollectionLogUser.findOne({
     where: useAccountHash ? { accountHash: runeliteId } : { runeliteId },
     include: [CollectionLog],
   });
@@ -51,7 +51,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       statusCode: 404,
       headers,
       body: JSON.stringify({ error: `User not found with runelite_id: ${body.runelite_id}` }),
-    }
+    };
   }
 
   const existingLog = user.collectionLog;
@@ -62,7 +62,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       statusCode: 200,
       headers,
       body: JSON.stringify(resData),
-    }
+    };
   }
 
   console.log(`STARTING COLLECTION LOG CREATE FOR USER: ${user.username}`);
@@ -83,13 +83,13 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const itemsToCreate: any = [];
   const kcToCreate: any = [];
 
-  for (let tabName in logData.tabs) {
+  for (const tabName in logData.tabs) {
 
-    // Check to see if there's an existing record for this tab
-    // Create one if not
-    let tab = collectionLogTabs.find((tab: CollectionLogTab) => {
-      return tab.name == tabName;
-    });
+    /*
+     * Check to see if there's an existing record for this tab
+     * Create one if not
+     */
+    let tab = collectionLogTabs.find((tab) => tab.name == tabName);
 
     if (!tab) {
       tab = await CollectionLogTab.create({ name: tabName });
@@ -97,21 +97,21 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     for (const entryName in logData.tabs[tabName]) {
 
-      // Check to see if there's an existing record for this entry
-      // Create one if not
-      let entry = collectionLogEntries.find((entry: CollectionLogEntry) => {
-        return entry.name == entryName;
-      });
+      /*
+       * Check to see if there's an existing record for this entry
+       * Create one if not
+       */
+      let entry = collectionLogEntries.find((entry) => entry.name == entryName);
 
       if (!entry) {
         entry = await CollectionLogEntry.create({
-          collectionLogTabId: tab!.id,
+          collectionLogTabId: tab.id,
           name: entryName,
         });
       }
 
       const itemData = logData.tabs[tabName][entryName].items;
-    
+
       itemData.forEach((item, i: number) => {
         const obtainedAt = item.obtained ? new Date().toISOString() : null;
         itemsToCreate.push({
@@ -128,12 +128,12 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       });
 
       const killCountData = logData.tabs[tabName][entryName].kill_count;
-    
+
       killCountData?.forEach((killCount: string) => {
         const killCountSplit = killCount.split(': ');
         const name = killCountSplit[0];
         const amount = killCountSplit[1];
-    
+
         kcToCreate.push({
           id: v4(),
           collectionLogId: collectionLog?.id,
@@ -160,7 +160,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     updateOnDuplicate: [
       'amount',
       'updatedAt',
-    ]
+    ],
   });
 
   await CollectionLog.update({
@@ -203,7 +203,7 @@ export const getByUsername = async (event: APIGatewayProxyEvent): Promise<APIGat
     headers,
     body: JSON.stringify(resData),
   };
-}
+};
 
 export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const runeliteId = event.pathParameters?.runelite_id as string;
@@ -220,9 +220,9 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  let user = await CollectionLogUser.findOne({
+  const user = await CollectionLogUser.findOne({
     where: !isNaN(accountHash) ? { accountHash: runeliteId } : { runeliteId },
-    include: [CollectionLog]
+    include: [CollectionLog],
   });
 
   if (!user?.collectionLog) {
@@ -237,7 +237,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ message: `Collection log update currently in progress` }),
+      body: JSON.stringify({ message: 'Collection log update currently in progress' }),
     };
   }
 
@@ -272,30 +272,31 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const kcToUpdate: any = [];
 
   for (const tabName in logData.tabs) {
-    const tab = collectionLogTabs.find((tab) => tab.name == tabName);
-    for (const entryName in logData.tabs[tabName]) {
-      let entry = collectionLogEntries.find((entry: CollectionLogEntry) => {
-        return entry.name == entryName;
-      });
+    let tab = collectionLogTabs.find((tab) => tab.name == tabName);
+    if (!tab) {
+      tab = await CollectionLogTab.create({ name: tabName });
+    }
 
+    for (const entryName in logData.tabs[tabName]) {
+      let entry = collectionLogEntries.find((entry) => entry.name == entryName);
       if (!entry) {
         entry = await CollectionLogEntry.create({
-          collectionLogTabId: tab!.id,
+          collectionLogTabId: tab.id,
           name: entryName,
         });
       }
 
       const itemData = logData.tabs[tabName][entryName].items;
-    
+
       itemData.forEach((item, i) => {
         const existingItem = existingItems.find((ei) => {
           return ei.itemId == item.id && ei.collectionLogEntryId == entry?.id;
         });
-    
+
         const isUpdated = itemsToUpdate.find((ui: any) => {
           return ui.itemId == item.id && ui.collectionLogEntryId == entry?.id;
         });
-    
+
         if (isUpdated) {
           return;
         }
@@ -312,7 +313,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           obtainedAt = new Date().toISOString();
         }
         if (newUnObtained) {
-          obtainedAt = undefined
+          obtainedAt = undefined;
         }
 
         if (shouldUpdate) {
@@ -331,24 +332,24 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       });
 
       const killCountData = logData.tabs[tabName][entryName].kill_count;
-    
+
       killCountData?.forEach((killCount: string) => {
         const killCountSplit = killCount.split(': ');
         const name = killCountSplit[0];
         const amount = Number(killCountSplit[1]);
-    
+
         const existingKc = existingKillCounts.find((ekc) => {
           return ekc.name == name && ekc.collectionLogEntryId == entry?.id;
         });
-    
+
         const isUpdated = kcToUpdate.find((ukc: any) => {
           return ukc.name == name && ukc.collectionLogId == entry?.id;
         });
-    
+
         if (isUpdated) {
           return;
         }
-    
+
         const dbId = existingKc?.id ?? v4();
         const shouldUpdate = existingKc?.amount != amount;
 
@@ -360,11 +361,11 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
             name: name,
             amount: amount,
           });
-      }
+        }
       });
     }
   }
-    
+
   await CollectionLogItem.bulkCreate(itemsToUpdate, {
     updateOnDuplicate: [
       'name',
@@ -380,7 +381,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     updateOnDuplicate: [
       'amount',
       'updatedAt',
-    ]
+    ],
   });
 
   await CollectionLog.update({
@@ -416,13 +417,5 @@ export const collectionLogExists = async (event: APIGatewayProxyEvent): Promise<
     statusCode: 200,
     headers,
     body: JSON.stringify({ exists }),
-  }
-}
-
-export const ping = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({}),
-  }
-}
+  };
+};

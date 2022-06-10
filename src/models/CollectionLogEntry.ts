@@ -8,7 +8,7 @@ import {
   HasMany,
   Model,
   PrimaryKey,
-  Table
+  Table,
 } from 'sequelize-typescript';
 
 import {
@@ -27,24 +27,24 @@ class CollectionLogEntry extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id!: string;
+    id!: string;
 
   @ForeignKey(() => CollectionLogTab)
   @Column(DataType.UUID)
-  collectionLogTabId!: string;
+    collectionLogTabId!: string;
 
   @AllowNull(false)
   @Column
-  name!: string;
+    name!: string;
 
   @BelongsTo(() => CollectionLogTab)
-  tab!: CollectionLogTab;
+    tab!: CollectionLogTab;
 
   @HasMany(() => CollectionLogItem)
-  items?: CollectionLogItem[];
+    items?: CollectionLogItem[];
 
   @HasMany(() => CollectionLogKillCount)
-  killCounts?: CollectionLogKillCount[];
+    killCounts?: CollectionLogKillCount[];
 }
 
 export default CollectionLogEntry;

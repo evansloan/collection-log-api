@@ -19,7 +19,7 @@ const headers = {
 db.addModels([
   CollectionLog,
   CollectionLogEntry,
-  CollectionLogItem, 
+  CollectionLogItem,
   CollectionLogKillCount,
   CollectionLogTab,
   CollectionLogUser,
@@ -71,7 +71,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (existingUser) {
     console.log(`EXISTING USER FOR ${body.username} FOUND. STARTING USER UPDATE`);
 
-    let updateData: CollectionLogUserData = {
+    const updateData: CollectionLogUserData = {
       username: body.username,
       accountType: body.account_type,
       isFemale: body.is_female,
@@ -87,7 +87,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       statusCode: 200,
       headers,
       body: JSON.stringify(existingUser),
-    }
+    };
   }
 
   console.log(`EXISTING USER FOR ${body.username} NOT FOUND. STARTING USER CREATE`);
@@ -131,7 +131,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const body = JSON.parse(event.body as string);
 
   const user = await CollectionLogUser.update({ username: body.username }, {
-    where: { id: id }
+    where: { id: id },
   });
 
   if (!user) {

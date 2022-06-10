@@ -26,29 +26,29 @@ class CollectionLogKillCount extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id!: string;
+    id!: string;
 
   @Index
   @ForeignKey(() => CollectionLog)
   @Column(DataType.UUID)
-  collectionLogId!: string;
+    collectionLogId!: string;
 
   @ForeignKey(() => CollectionLogEntry)
   @Column(DataType.UUID)
-  collectionLogEntryId!: string;
+    collectionLogEntryId!: string;
 
   @Column
-  name!: string;
+    name!: string;
 
   @Default(0)
   @Column(DataType.NUMBER.UNSIGNED)
-  amount!: number;
+    amount!: number;
 
   @BelongsTo(() => CollectionLog)
-  collectionLog!: CollectionLog;
+    collectionLog!: CollectionLog;
 
   @BelongsTo(() => CollectionLogEntry)
-  entry!: CollectionLogEntry;
+    entry!: CollectionLogEntry;
 }
 
 export default CollectionLogKillCount;

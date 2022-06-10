@@ -1,4 +1,3 @@
-import Sequelize from 'sequelize';
 import {
   AllowNull,
   Column,
@@ -21,7 +20,7 @@ import { CollectionLog } from '@models/index';
     'accountType',
     'created_at',
     'updated_at',
-  ]
+  ],
 }))
 @Table({
   tableName: 'collection_log_user',
@@ -34,23 +33,23 @@ class CollectionLogUser extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  id!: string;
+    id!: string;
 
   @AllowNull(false)
   @Column
-  username!: string;
+    username!: string;
 
   @Column
-  accountType?: string;
+    accountType?: string;
 
   @Column
-  runeliteId?: string;
+    runeliteId?: string;
 
   @Column
-  accountHash?: string;
+    accountHash?: string;
 
   @HasOne(() => CollectionLog)
-  collectionLog?: CollectionLog;
+    collectionLog?: CollectionLog;
 }
 
 export default CollectionLogUser;

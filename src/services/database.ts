@@ -9,8 +9,8 @@ const createConnection = () => {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT as string),
   });
-  
+
   return db;
-}
+};
 
 export default createConnection();

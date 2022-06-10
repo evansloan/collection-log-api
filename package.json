@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.{ts,tsx}",
-    "lint:fix": "eslint --fix src/**/*.{ts,tsx}"
+    "lint": "eslint {migrations,src}/**/*.{js,ts,tsx}",
+    "lint:fix": "eslint --fix {migrations,src}/**/*.{js,ts,tsx}"
   },
   "author": "",
   "license": "ISC",

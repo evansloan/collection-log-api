@@ -19,7 +19,7 @@ const headers = {
 db.addModels([
   CollectionLog,
   CollectionLogEntry,
-  CollectionLogItem, 
+  CollectionLogItem,
   CollectionLogKillCount,
   CollectionLogTab,
   CollectionLogUser,
@@ -65,7 +65,7 @@ export const recentItems = async (event: APIGatewayProxyEvent): Promise<APIGatew
     username: user.username,
     account_type: user.accountType,
     items: items,
-  }
+  };
 
   return {
     statusCode: 200,
@@ -87,7 +87,7 @@ export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Prom
       headers,
       body: JSON.stringify({ error: `Collection log items not found for username: ${username}` }),
     };
-  };
+  }
 
   const entryName = event.queryStringParameters?.entryName;
   const offset: number|undefined = parseInt(event.queryStringParameters?.offset as string) || undefined;
@@ -116,9 +116,9 @@ export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Prom
     return {
       statusCode: 404,
       headers,
-      body: JSON.stringify({ error: `Collection log entry not found with name: ${entryName}`}),
+      body: JSON.stringify({ error: `Collection log entry not found with name: ${entryName}` }),
     };
-  };
+  }
 
   const items = await CollectionLogItem.findAndCountAll({
     attributes: [
@@ -135,7 +135,7 @@ export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Prom
     order: ['sequence'],
     limit: limit,
     offset: offset,
-  })
+  });
 
   const resData = {
     username: user.username,
@@ -143,11 +143,11 @@ export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Prom
     item_count: items.count,
     items: items.rows,
     kill_count: entry.killCounts,
-  }
+  };
 
   return {
     statusCode: 200,
     headers,
     body: JSON.stringify(resData),
   };
-}
+};

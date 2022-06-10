@@ -28,20 +28,20 @@ const validAccountTypes = [
 db.addModels([
   CollectionLog,
   CollectionLogEntry,
-  CollectionLogItem, 
+  CollectionLogItem,
   CollectionLogKillCount,
   CollectionLogTab,
   CollectionLogUser,
 ]);
 
 export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  let accountType = event.queryStringParameters?.accountType?.toUpperCase();
+  const accountType = event.queryStringParameters?.accountType?.toUpperCase();
 
   let accountTypeFilter = undefined;
   if (accountType && validAccountTypes.indexOf(accountType) != -1) {
     accountTypeFilter = {
       accountType: accountType,
-    }
+    };
   }
 
   let page = 1;
@@ -89,16 +89,16 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     headers,
     body: JSON.stringify(resData),
   };
-}
+};
 
 export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  let accountType = event.queryStringParameters?.accountType?.toUpperCase();
+  const accountType = event.queryStringParameters?.accountType?.toUpperCase();
 
   let accountTypeFilter = undefined;
   if (accountType && validAccountTypes.indexOf(accountType) != -1) {
     accountTypeFilter = {
       accountType: accountType,
-    }
+    };
   }
 
   let page = 1;
@@ -144,4 +144,4 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
     headers,
     body: JSON.stringify(resData),
   };
-}
+};

@@ -18,17 +18,17 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
       },
       created_at: {
-        type: Sequelize.DataTypes.DATE
+        type: Sequelize.DataTypes.DATE,
       },
       updated_at: {
-        type: Sequelize.DataTypes.DATE
+        type: Sequelize.DataTypes.DATE,
       },
       deleted_at: {
-        type: Sequelize.DataTypes.DATE
-      }
+        type: Sequelize.DataTypes.DATE,
+      },
     });
   },
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.dropTable('collection_log_user');
-  }
+  },
 };

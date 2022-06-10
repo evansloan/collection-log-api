@@ -3,8 +3,8 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn('collection_log_user', 'is_female', {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
     });
 
     await queryInterface.addColumn('collection_log_user', 'account_hash', {
@@ -12,8 +12,8 @@ module.exports = {
     });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.removeColumn('collection_log_user', 'is_female');
     await queryInterface.removeColumn('collection_log_user', 'account_hash');
-  }
+  },
 };

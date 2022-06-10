@@ -14,9 +14,9 @@ module.exports = {
           model: {
             tableName: 'collection_log',
           },
-          key: 'id'
+          key: 'id',
         },
-        allowNull: false
+        allowNull: false,
       },
       collection_log_entry_id: {
         type: Sequelize.DataTypes.UUID,
@@ -24,9 +24,9 @@ module.exports = {
           model: {
             tableName: 'collection_log_entry',
           },
-          key: 'id'
+          key: 'id',
         },
-        allowNull: false
+        allowNull: false,
       },
       name: {
         type: Sequelize.DataTypes.STRING,
@@ -37,18 +37,18 @@ module.exports = {
         defaultValue: 0,
       },
       created_at: {
-        type: Sequelize.DataTypes.DATE
+        type: Sequelize.DataTypes.DATE,
       },
       updated_at: {
-        type: Sequelize.DataTypes.DATE
+        type: Sequelize.DataTypes.DATE,
       },
       deleted_at: {
-        type: Sequelize.DataTypes.DATE
-      }
+        type: Sequelize.DataTypes.DATE,
+      },
     });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.dropTable('collection_log_kill_count');
-  }
+  },
 };
