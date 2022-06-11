@@ -30,40 +30,40 @@ class CollectionLog extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-    id!: string;
+  id!: string;
 
   @Default(0)
   @Column
-    uniqueObtained!: number;
+  uniqueObtained!: number;
 
   @Default(0)
   @Column
-    uniqueItems!: number;
+  uniqueItems!: number;
 
   @Default(0)
   @Column
-    totalObtained!: number;
+  totalObtained!: number;
 
   @Default(0)
   @Column
-    totalItems!: number;
+  totalItems!: number;
 
   @Default(false)
   @Column
-    isUpdating!: boolean;
+  isUpdating!: boolean;
 
   @ForeignKey(() => CollectionLogUser)
   @Column(DataType.UUID)
-    userId!: string;
+  userId!: string;
 
   @BelongsTo(() => CollectionLogUser)
-    user!: CollectionLogUser;
+  user!: CollectionLogUser;
 
   @HasMany(() => CollectionLogItem)
-    items?: CollectionLogItem[];
+  items?: CollectionLogItem[];
 
   @HasMany(() => CollectionLogKillCount)
-    killCounts?: CollectionLogKillCount[];
+  killCounts?: CollectionLogKillCount[];
 
   jsonData = async () => {
     /*

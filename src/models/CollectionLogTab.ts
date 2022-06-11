@@ -21,14 +21,14 @@ class CollectionLogTab extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-    id!: string;
+  id!: string;
 
   @AllowNull(false)
   @Column
-    name!: string;
+  name!: string;
 
   @HasMany(() => CollectionLogEntry)
-    entries?: CollectionLogEntry[];
+  entries?: CollectionLogEntry[];
 }
 
 export default CollectionLogTab;

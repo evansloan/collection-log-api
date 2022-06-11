@@ -26,42 +26,42 @@ class CollectionLogItem extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-    id!: string;
+  id!: string;
 
   @Index
   @ForeignKey(() => CollectionLog)
   @Column(DataType.UUID)
-    collectionLogId!: string;
+  collectionLogId!: string;
 
   @ForeignKey(() => CollectionLogEntry)
   @Column(DataType.UUID)
-    collectionLogEntryId!: string;
+  collectionLogEntryId!: string;
 
   @Column
-    name!: string;
+  name!: string;
 
   @Column(DataType.NUMBER.UNSIGNED)
-    itemId!: number;
+  itemId!: number;
 
   @Default(0)
   @Column(DataType.NUMBER.UNSIGNED)
-    quantity!: number;
+  quantity!: number;
 
   @Default(false)
   @Column
-    obtained!: boolean;
+  obtained!: boolean;
 
   @Column(DataType.NUMBER.UNSIGNED)
-    sequence!: number;
+  sequence!: number;
 
   @Column(DataType.DATE)
-    obtainedAt?: Date;
+  obtainedAt?: Date;
 
   @BelongsTo(() => CollectionLog)
-    collectionLog!: CollectionLog;
+  collectionLog!: CollectionLog;
 
   @BelongsTo(() => CollectionLogEntry)
-    entry!: CollectionLogEntry;
+  entry!: CollectionLogEntry;
 }
 
 export default CollectionLogItem;

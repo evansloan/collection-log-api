@@ -24,7 +24,7 @@
       "comma-dangle": ["off"],
       "curly": ["error", "all"],
       "dot-location": ["error", "property"],
-      "indent": ["error", 2],
+      "indent": ["error", 2, {"ignoredNodes": ["PropertyDefinition"]}],
       "jsx-quotes": ["error", "prefer-single"],
       "max-len": ["off"],
       "multiline-comment-style": ["warn", "starred-block"],
