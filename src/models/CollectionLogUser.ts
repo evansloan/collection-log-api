@@ -18,6 +18,7 @@ import { CollectionLog } from '@models/index';
     'id',
     'username',
     'accountType',
+    'isBanned',
     'created_at',
     'updated_at',
   ],
@@ -33,23 +34,27 @@ class CollectionLogUser extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-    id!: string;
+  id!: string;
 
   @AllowNull(false)
   @Column
-    username!: string;
+  username!: string;
 
   @Column
-    accountType?: string;
+  accountType?: string;
 
   @Column
-    runeliteId?: string;
+  runeliteId?: string;
 
   @Column
-    accountHash?: string;
+  accountHash?: string;
+
+  @Default(false)
+  @Column
+  isBanned!: boolean;
 
   @HasOne(() => CollectionLog)
-    collectionLog?: CollectionLog;
+  collectionLog?: CollectionLog;
 }
 
 export default CollectionLogUser;
