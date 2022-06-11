@@ -18,6 +18,7 @@ import { CollectionLog } from '@models/index';
     'id',
     'username',
     'accountType',
+    'isBanned',
     'created_at',
     'updated_at',
   ],
@@ -48,8 +49,8 @@ class CollectionLogUser extends Model {
   @Column
   accountHash?: string;
 
-  @Column
   @Default(false)
+  @Column
   isBanned!: boolean;
 
   @HasOne(() => CollectionLog)

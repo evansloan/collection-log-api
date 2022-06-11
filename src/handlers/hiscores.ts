@@ -63,6 +63,7 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         'runeliteId',
         'accountHash',
         'isFemale',
+        'isBanned',
         'createdAt',
         'updatedAt',
         'deletedAt',
@@ -78,6 +79,7 @@ export const unique = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       runeliteId: {
         [Op.ne]: null,
       },
+      isBanned: false,
     },
     order: [[Sequelize.literal('"collectionLog"."unique_obtained"'), 'DESC']],
     limit: 25,
@@ -118,6 +120,9 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
       exclude: [
         'id',
         'runeliteId',
+        'accountHash',
+        'isFemale',
+        'isBanned',
         'createdAt',
         'updatedAt',
         'deletedAt',
@@ -133,6 +138,7 @@ export const total = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
       runeliteId: {
         [Op.ne]: null,
       },
+      isBanned: false,
     },
     order: [[Sequelize.literal('"collectionLog"."total_obtained"'), 'DESC']],
     limit: 25,

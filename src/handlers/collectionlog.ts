@@ -54,6 +54,14 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
+  if (user.isBanned) {
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({ error: 'User not permitted to upload collection log data' }),
+    };
+  }
+
   const existingLog = user.collectionLog;
 
   if (existingLog) {
@@ -230,6 +238,14 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       statusCode: 404,
       headers,
       body: JSON.stringify({ error: `Collection log not found with runelite_id: ${runeliteId}` }),
+    };
+  }
+
+  if (user.isBanned) {
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({ error: 'User not permitted to upload collection log data' }),
     };
   }
 
