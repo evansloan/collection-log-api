@@ -33,23 +33,27 @@ class CollectionLogUser extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-    id!: string;
+  id!: string;
 
   @AllowNull(false)
   @Column
-    username!: string;
+  username!: string;
 
   @Column
-    accountType?: string;
+  accountType?: string;
 
   @Column
-    runeliteId?: string;
+  runeliteId?: string;
 
   @Column
-    accountHash?: string;
+  accountHash?: string;
+
+  @Column
+  @Default(false)
+  isBanned!: boolean;
 
   @HasOne(() => CollectionLog)
-    collectionLog?: CollectionLog;
+  collectionLog?: CollectionLog;
 }
 
 export default CollectionLogUser;
