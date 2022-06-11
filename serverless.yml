@@ -80,18 +80,11 @@ functions:
           path: /user
           method: post
 
-  get-hiscores-unique:
-    handler: src/handlers/hiscores.unique
+  get-hiscores:
+    handler: src/handlers/hiscores.get
     events:
       - httpApi:
-          path: /hiscores/unique/{page}
-          method: get
-
-  get-hiscores-total:
-    handler: src/handlers/hiscores.total
-    events:
-      - httpApi:
-          path: /hiscores/total/{page}
+          path: /hiscores/{type}/{page}
           method: get
 
   get-items-recent:
