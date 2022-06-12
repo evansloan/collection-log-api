@@ -59,6 +59,15 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     });
   }
 
+  if (!existingUser) {
+    console.log(`EXISTING USER FOR ${body.username} NOT FOUND WITH account_hash OR runelite_id. TRYING username`);
+    existingUser = await CollectionLogUser.findOne({
+      where: {
+        username: body.username,
+      },
+    });
+  }
+
   if (existingUser) {
     console.log(`EXISTING USER FOR ${body.username} FOUND. STARTING USER UPDATE`);
 
