@@ -9,6 +9,7 @@ import {
   Index,
   PrimaryKey,
   Table,
+  Scopes,
 } from 'sequelize-typescript';
 
 import { CollectionLog } from '@models/index';
@@ -22,6 +23,15 @@ import { CollectionLog } from '@models/index';
     'created_at',
     'updated_at',
   ],
+}))
+@Scopes(() => ({
+  info: {
+    attributes: [
+      ['username', 'username'],
+      ['account_type', 'account_type'],
+      ['is_female', 'is_female'],
+    ],
+  },
 }))
 @Table({
   tableName: 'collection_log_user',

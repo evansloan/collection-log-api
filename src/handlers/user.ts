@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyHandlerV2, APIGatewayProxyResult } from 'aws-lambda';
 
 import { CollectionLogUserData } from '@datatypes/CollectionLogUserData';
 import {
@@ -29,6 +29,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const body = JSON.parse(event.body as string);
 
   if (!body.account_hash && !body.runelite_id) {
+    console.log(`MISSING IDENTIFIER FOR ${body.username}. RLID: ${body.runelite_id} AH: ${body.account_hash}`);
     return {
       statusCode: 400,
       headers,
@@ -131,7 +132,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const body = JSON.parse(event.body as string);
 
   const user = await CollectionLogUser.update({ username: body.username }, {
-    where: { id: id },
+    where: { id },
   });
 
   if (!user) {
@@ -146,5 +147,15 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     statusCode: 200,
     headers,
     body: JSON.stringify({ updated: true }),
+  };
+};
+
+export const count: APIGatewayProxyHandlerV2 = async () => {
+  const userCount = await CollectionLogUser.count();
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ count: userCount }),
   };
 };
