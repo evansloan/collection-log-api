@@ -12,6 +12,7 @@ import {
   CollectionLogUser,
 } from '@models/index';
 import db from '@services/database';
+import { CreationAttributes } from 'sequelize/types';
 
 const headers = {
   'content-type': 'application/json',
@@ -88,8 +89,8 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const collectionLogTabs = await CollectionLogTab.findAll();
   const collectionLogEntries = await CollectionLogEntry.findAll();
 
-  const itemsToCreate: any = [];
-  const kcToCreate: any = [];
+  const itemsToCreate: CreationAttributes<CollectionLogItem>[] = [];
+  const kcToCreate: CreationAttributes<CollectionLogKillCount>[] = [];
 
   for (const tabName in logData.tabs) {
 
@@ -124,7 +125,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const obtainedAt = item.obtained ? new Date().toISOString() : null;
         itemsToCreate.push({
           id: v4(),
-          collectionLogId: collectionLog?.id,
+          collectionLogId: collectionLog.id,
           collectionLogEntryId: entry?.id,
           itemId: item.id,
           name: item.name,
@@ -144,7 +145,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
         kcToCreate.push({
           id: v4(),
-          collectionLogId: collectionLog?.id,
+          collectionLogId: collectionLog.id,
           collectionLogEntryId: entry?.id,
           name: name,
           amount: amount,
@@ -174,7 +175,7 @@ export const create = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await CollectionLog.update({
     isUpdating: false,
   }, {
-    where: { id: collectionLog?.id },
+    where: { id: collectionLog.id },
   });
 
   const response = {
@@ -284,8 +285,8 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     },
   });
 
-  const itemsToUpdate: any = [];
-  const kcToUpdate: any = [];
+  const itemsToUpdate: CreationAttributes<CollectionLogItem>[] = [];
+  const kcToUpdate: CreationAttributes<CollectionLogKillCount>[] = [];
 
   for (const tabName in logData.tabs) {
     let tab = collectionLogTabs.find((tab) => tab.name == tabName);
@@ -305,17 +306,17 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const itemData = logData.tabs[tabName][entryName].items;
 
       itemData.forEach((item, i) => {
-        const existingItem = existingItems.find((ei) => {
-          return ei.itemId == item.id && ei.collectionLogEntryId == entry?.id;
-        });
-
-        const isUpdated = itemsToUpdate.find((ui: any) => {
+        const isUpdated = itemsToUpdate.find((ui) => {
           return ui.itemId == item.id && ui.collectionLogEntryId == entry?.id;
         });
 
         if (isUpdated) {
           return;
         }
+
+        const existingItem = existingItems.find((ei) => {
+          return ei.itemId == item.id && ei.collectionLogEntryId == entry?.id;
+        });
 
         const dbId = existingItem?.id ?? v4();
         const newObtained = !existingItem?.obtained && item.obtained;
