@@ -43,7 +43,7 @@ provider:
 functions:
   create-collection-log:
     handler: src/handlers/collectionlog.create
-    timeout: 25
+    timeout: 29
     events:
       - httpApi:
           path: /collectionlog
@@ -80,11 +80,26 @@ functions:
           path: /user
           method: post
 
+  get-user-count:
+    handler: src/handlers/user.count
+    events:
+      - httpApi:
+          path: /user/count
+          method: get
+
   get-hiscores:
     handler: src/handlers/hiscores.get
+    timeout: 25
     events:
       - httpApi:
           path: /hiscores/{type}/{page}
+          method: get
+
+  get-hiscores-rank-by-username:
+    handler: src/handlers/hiscores.getRankByUsername
+    events:
+      - httpApi:
+          path: /hiscores/rank/{username}
           method: get
 
   get-items-recent:
