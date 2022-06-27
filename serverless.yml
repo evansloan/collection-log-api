@@ -117,6 +117,13 @@ functions:
           path: /items/user/{username}
           method: get
 
+  get-items-typeahead:
+    handler: src/handlers/items.typeahead
+    events:
+      - httpApi:
+          path: /items/typeahead/{name}
+          method: get
+
 plugins:
   - serverless-plugin-typescript
   - serverless-tscpaths

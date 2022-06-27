@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyHandlerV2, APIGatewayProxyResult } from 'aws-lambda';
 import { Sequelize } from 'sequelize-typescript';
 
 import {
@@ -10,6 +10,7 @@ import {
   CollectionLogUser,
 } from '@models/index';
 import db from '@services/database';
+import { QueryTypes } from 'sequelize';
 
 const headers = {
   'content-type': 'application/json',
@@ -149,5 +150,42 @@ export const getEntryItemsByUsername = async (event: APIGatewayProxyEvent): Prom
     statusCode: 200,
     headers,
     body: JSON.stringify(resData),
+  };
+};
+
+export const typeahead: APIGatewayProxyHandlerV2 = async (event) => {
+  const name = event.pathParameters?.name as string;
+
+  const subQuery = `
+    SELECT
+      "cli"."name",
+      "cli"."item_id"
+    FROM
+      "collection_log_item" "cli"
+    WHERE
+      LOWER("cli"."name") LIKE ?
+      AND LOWER("cli"."name") != 'members object'
+    LIMIT
+      25
+  `;
+
+  const query = `
+    SELECT
+      DISTINCT "isq"."item_id" AS "item_id",
+      "isq"."name" AS "name"
+    FROM (${subQuery}) "isq"
+    ORDER BY "isq"."name"
+    LIMIT 5
+  `;
+
+  const results = await db.query(query, {
+    replacements: [`%${name.toLowerCase()}%`],
+    type: QueryTypes.SELECT,
+  });
+
+  return {
+    statusCode: 200,
+    headers: headers,
+    body: JSON.stringify(results),
   };
 };
