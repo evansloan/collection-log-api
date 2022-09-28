@@ -234,7 +234,17 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     include: [CollectionLog],
   });
 
-  if (!user?.collectionLog) {
+  if (!user) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: 'User not found' }),
+    };
+  }
+
+  const { username, isBanned, collectionLog } = user;
+
+  if (!collectionLog) {
     return {
       statusCode: 404,
       headers,
@@ -242,7 +252,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  if (user.isBanned) {
+  if (isBanned) {
     return {
       statusCode: 403,
       headers,
@@ -250,7 +260,8 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  if (user.collectionLog.isUpdating) {
+  if (collectionLog.isUpdating) {
+    console.log('UPDATE IN PROGRESS FOR:', username);
     return {
       statusCode: 200,
       headers,
@@ -258,7 +269,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     };
   }
 
-  console.log('STARTING COLLECTION LOG UPDATE FOR:', user.username);
+  console.log('STARTING COLLECTION LOG UPDATE FOR:', username);
 
   const logUpdateData = {
     uniqueObtained: logData.unique_obtained,
@@ -268,7 +279,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     isUpdating: true,
   };
   await CollectionLog.update(logUpdateData, {
-    where: { id: user.collectionLog?.id },
+    where: { id: collectionLog.id },
   });
 
   const collectionLogTabs = await CollectionLogTab.findAll();
@@ -276,12 +287,12 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const existingItems = await CollectionLogItem.findAll({
     where: {
-      collectionLogId: user.collectionLog.id,
+      collectionLogId: collectionLog.id,
     },
   });
   const existingKillCounts = await CollectionLogKillCount.findAll({
     where: {
-      collectionLogId: user.collectionLog.id,
+      collectionLogId: collectionLog.id,
     },
   });
 
@@ -322,8 +333,10 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const newObtained = !existingItem?.obtained && item.obtained;
         const newUnObtained = existingItem?.obtained && !item.obtained;
         const newQuantity = existingItem?.quantity != item.quantity;
+        const newName = existingItem?.name != item.name;
+        const newSequence = existingItem?.sequence != i;
 
-        const shouldUpdate = newObtained || newUnObtained || newQuantity;
+        const shouldUpdate = newObtained || newUnObtained || newQuantity || newName || newSequence;
 
         let obtainedAt: Date|string|undefined = existingItem?.obtainedAt;
         if (newObtained) {
@@ -336,7 +349,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         if (shouldUpdate) {
           itemsToUpdate.push({
             id: dbId,
-            collectionLogId: user?.collectionLog?.id,
+            collectionLogId: collectionLog.id,
             collectionLogEntryId: entry?.id,
             itemId: item.id,
             name: item.name,
@@ -373,7 +386,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         if (shouldUpdate) {
           kcToUpdate.push({
             id: dbId,
-            collectionLogId: user?.collectionLog?.id,
+            collectionLogId: collectionLog.id,
             collectionLogEntryId: entry?.id,
             name: name,
             amount: amount,
@@ -404,7 +417,7 @@ export const update = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await CollectionLog.update({
     isUpdating: false,
   }, {
-    where: { id: user.collectionLog?.id },
+    where: { id: collectionLog.id },
   });
 
   return {
