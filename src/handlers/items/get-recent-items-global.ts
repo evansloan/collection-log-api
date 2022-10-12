@@ -7,46 +7,55 @@ import { headers } from '@utils/handler-utils';
 
 const recentItemsGlobal: APIGatewayProxyHandlerV2 = async (event, context) => {
   const dbContext = context as DatabaseContext;
-  // TODO: use query builder
-  const items = await dbContext.database.raw(`
-    WITH user_items AS (
-      SELECT
-        name,
-        item_id,
-        quantity,
-        obtained,
-        obtained_at,
-        collection_log_id,
-        ROW_NUMBER() OVER (PARTITION BY collection_log_id ORDER BY obtained_at DESC, name)
-      FROM
-        ${CollectionLogItem.tableName}
-      WHERE obtained
-        AND deleted_at IS NULL
-        AND obtained_at >= NOW() - INTERVAL '10 DAYS'
-    )
-    SELECT
-      ui.name AS name,
-      ui.item_id AS id,
-      ui.quantity AS quantity,
-      ui.obtained AS obtained,
-      ui.obtained_at AS "obtainedAt",
-      clu.username AS username
-    FROM
-      user_items ui
-      JOIN ${CollectionLog.tableName} cl ON cl.id = ui.collection_log_id
-      JOIN ${CollectionLogUser.tableName} clu ON clu.id = cl.user_id
-    WHERE ui.row_number = 1
-      AND cl.deleted_at IS NULL
-      AND clu.deleted_at IS NULL
-    ORDER BY
-      ui.obtained_at DESC
-    LIMIT 30;
-  `);
+  const { database: db } = dbContext;
+
+  const itemSubSelect = {
+    name: 'name',
+    quantity: 'quantity',
+    obtained: 'obtained',
+    obtained_at: 'obtained_at',
+    collection_log_id: 'collection_log_id',
+    item_id: 'item_id',
+  };
+
+  const itemOuterSelect = {
+    name: 'name',
+    quantity: 'quantity',
+    obtained: 'obtained',
+    obtainedAt: 'obtained_at',
+    id: 'item_id',
+    username: 'username',
+  };
+
+  const allItemsQuery = db.select(itemSubSelect)
+    .rowNumber('index', (qb) => {
+      qb.partitionBy('collection_log_id')
+        .orderBy('obtained_at', 'DESC')
+        .orderBy('name', 'ASC');
+    })
+    .from(CollectionLogItem.tableName)
+    .where({
+      obtained: true,
+      deleted_at: null,
+    })
+    // eslint-disable-next-line quotes
+    .andWhereRaw("obtained_at >= NOW() - INTERVAL '10 DAYS'");
+
+  const items = await db.with('items', allItemsQuery)
+    .select(itemOuterSelect)
+    .from('items')
+    .join(CollectionLog.tableName, 'collection_log.id', '=', 'items.collection_log_id')
+    .join(CollectionLogUser.tableName, 'collection_log_user.id', '=', 'collection_log.user_id')
+    .where('index', 1)
+    .andWhere('collection_log.deleted_at', null)
+    .andWhere('collection_log_user.deleted_at', null)
+    .orderBy('items.obtained_at', 'DESC')
+    .limit(30);
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ items: items.rows }),
+    body: JSON.stringify({ items }),
   };
 };
 
