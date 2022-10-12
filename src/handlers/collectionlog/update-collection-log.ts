@@ -124,6 +124,7 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
             name,
             quantity,
             sequence: i,
+            obtained,
             obtainedAt,
           });
         }
@@ -170,8 +171,8 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
       'quantity',
       'obtained',
       'sequence',
-      'obtainedAt',
-      'updatedAt',
+      'obtained_at',
+      'updated_at',
     ]);
 
   await CollectionLogKillCount.query()
@@ -179,7 +180,7 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
     .onConflict('id')
     .merge([
       'amount',
-      'updatedAt',
+      'updated_at',
     ]);
 
   await existingLog.$query().update({ isUpdating: false });
