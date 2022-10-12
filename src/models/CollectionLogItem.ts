@@ -1,67 +1,68 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Default,
-  ForeignKey,
-  Index,
-  Model,
-  PrimaryKey,
-  Table,
-} from 'sequelize-typescript';
+import { ColumnNameMappers, Model } from 'objection';
 
-import {
-  CollectionLog,
-  CollectionLogEntry,
-} from '@models/index';
+import { BaseModel } from './BaseModel';
+import { CollectionLog, CollectionLogPage } from '@models/index';
 
-@Table({
-  tableName: 'collection_log_item',
-  underscored: true,
-  paranoid: true,
-})
-class CollectionLogItem extends Model {
-
-  @Index
-  @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  id!: string;
-
-  @Index
-  @ForeignKey(() => CollectionLog)
-  @Column(DataType.UUID)
+export default class CollectionLogItem extends BaseModel {
+  name!: string;
+  itemId!: number;
+  quantity!: number;
+  sequence!: number;
+  obtained!: boolean;
+  obtainedAt?: Date;
   collectionLogId!: string;
-
-  @ForeignKey(() => CollectionLogEntry)
-  @Column(DataType.UUID)
   collectionLogEntryId!: string;
 
-  @Column
-  name!: string;
-
-  @Column(DataType.NUMBER.UNSIGNED)
-  itemId!: number;
-
-  @Default(0)
-  @Column(DataType.NUMBER.UNSIGNED)
-  quantity!: number;
-
-  @Default(false)
-  @Column
-  obtained!: boolean;
-
-  @Column(DataType.NUMBER.UNSIGNED)
-  sequence!: number;
-
-  @Column(DataType.DATE)
-  obtainedAt?: Date;
-
-  @BelongsTo(() => CollectionLog)
+  page!: CollectionLogPage;
   collectionLog!: CollectionLog;
 
-  @BelongsTo(() => CollectionLogEntry)
-  entry!: CollectionLogEntry;
-}
+  static tableName = 'collection_log_item';
 
-export default CollectionLogItem;
+  static columnNameMappers: ColumnNameMappers = {
+    parse(obj) {
+      return {
+        ...BaseModel.defaultParse(obj),
+        name: obj.name,
+        itemId: obj.item_id,
+        quantity: obj.quantity,
+        sequence: obj.sequence,
+        obtained: obj.obtained,
+        obtainedAt: obj.obtained_at,
+        collectionLogId: obj.collection_log_id,
+        collectionLogEntryId: obj.collection_log_entry_id,
+      };
+    },
+    format(obj) {
+      return {
+        ...BaseModel.defaultFormat(obj),
+        name: obj.name,
+        item_id: obj.itemId,
+        quantity: obj.quantity,
+        sequence: obj.sequence,
+        obtained: obj.obtained,
+        obtained_at: obj.obtainedAt,
+        collection_log_id: obj.collectionLogId,
+        collection_log_entry_id: obj.collectionLogEntryId,
+      };
+    },
+  };
+
+  static relationMappings = () => ({
+    page: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: CollectionLogPage,
+      join: {
+        from: 'collection_log_item.collection_log_entry_id',
+        to: 'collection_log_entry.id',
+      },
+    },
+    collectionLog: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: CollectionLog,
+      join: {
+        from: 'collection_log_item.collection_log_id',
+        to: 'collection_log.id',
+      },
+    },
+  });
+}

@@ -57,7 +57,7 @@
         "error",
         "always",
         {
-          "arraysInObjects": false,
+          "arraysInObjects": true,
           "objectsInObjects": true
         }
       ],

@@ -1,34 +1,38 @@
-import {
-  AllowNull,
-  Column,
-  DataType,
-  Default,
-  HasMany,
-  Model,
-  PrimaryKey,
-  Table,
-} from 'sequelize-typescript';
+import { ColumnNameMappers, Model } from 'objection';
 
-import { CollectionLogEntry } from '@models/index';
+import { BaseModel } from './BaseModel';
+import { CollectionLogPage } from '@models/index';
 
-@Table({
-  tableName: 'collection_log_tab',
-  underscored: true,
-  paranoid: true,
-})
-class CollectionLogTab extends Model {
-
-  @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  id!: string;
-
-  @AllowNull(false)
-  @Column
+export default class CollectionLogTab extends BaseModel {
   name!: string;
 
-  @HasMany(() => CollectionLogEntry)
-  entries?: CollectionLogEntry[];
-}
+  pages!: CollectionLogPage[];
 
-export default CollectionLogTab;
+  static tableName = 'collection_log_tab';
+
+  static columnNameMappers: ColumnNameMappers = {
+    parse(obj) {
+      return {
+        ...BaseModel.defaultParse(obj),
+        name: obj.name,
+      };
+    },
+    format(obj) {
+      return {
+        ...BaseModel.defaultFormat(obj),
+        name: obj.name,
+      };
+    },
+  };
+
+  static relationMappings = () => ({
+    pages: {
+      relation: Model.HasManyRelation,
+      modelClass: CollectionLogPage,
+      join: {
+        from: 'collection_log_tab.id',
+        to: 'collection_log_entry.collection_log_tab_id',
+      },
+    },
+  });
+}

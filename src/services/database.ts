@@ -1,16 +1,43 @@
-import { Sequelize } from 'sequelize-typescript';
+import Knex from 'knex';
 
-const createConnection = () => {
-  const db = new Sequelize({
-    database: process.env.DB_NAME,
-    dialect: 'postgres',
-    username: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT as string),
-  });
+export class DatabaseService {
+  private static readonly CLIENT: string = 'pg';
 
-  return db;
-};
+  private static readonly HOST: string = process.env.DB_HOST as string;
 
-export default createConnection();
+  private static readonly PORT: number = Number(process.env.DB_PORT);
+
+  private static readonly USER: string = process.env.DB_USER as string;
+
+  private static readonly PASSWORD: string = process.env.DB_PASS as string;
+
+  private static readonly NAME: string = process.env.DB_NAME as string;
+
+  private static readonly DEBUG: boolean = !!process.env.DEBUG;
+
+  private readonly connection;
+
+  constructor() {
+    const knexConfig = {
+      client: DatabaseService.CLIENT,
+      connection: {
+        host: DatabaseService.HOST,
+        port: DatabaseService.PORT,
+        user: DatabaseService.USER,
+        password: DatabaseService.PASSWORD,
+        database: DatabaseService.NAME,
+      },
+      pool: {
+        min: 0,
+        max: 16,
+      },
+      debug: DatabaseService.DEBUG,
+    };
+
+    this.connection = Knex(knexConfig);
+  }
+
+  public getConnection = () => {
+    return this.connection;
+  };
+}

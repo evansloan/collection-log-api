@@ -1,54 +1,56 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Default,
-  ForeignKey,
-  Index,
-  Model,
-  PrimaryKey,
-  Table,
-} from 'sequelize-typescript';
+import { ColumnNameMappers, Model } from 'objection';
 
-import {
-  CollectionLog,
-  CollectionLogEntry,
-} from '@models/index';
+import { BaseModel } from './BaseModel';
+import { CollectionLog, CollectionLogPage } from '@models/index';
 
-@Table({
-  tableName: 'collection_log_kill_count',
-  underscored: true,
-  paranoid: true,
-})
-class CollectionLogKillCount extends Model {
-
-  @Index
-  @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  id!: string;
-
-  @Index
-  @ForeignKey(() => CollectionLog)
-  @Column(DataType.UUID)
+export default class CollectionLogKillCount extends BaseModel {
+  name!: string;
+  amount!: number;
   collectionLogId!: string;
-
-  @ForeignKey(() => CollectionLogEntry)
-  @Column(DataType.UUID)
   collectionLogEntryId!: string;
 
-  @Column
-  name!: string;
-
-  @Default(0)
-  @Column(DataType.NUMBER.UNSIGNED)
-  amount!: number;
-
-  @BelongsTo(() => CollectionLog)
+  page!: CollectionLogPage;
   collectionLog!: CollectionLog;
 
-  @BelongsTo(() => CollectionLogEntry)
-  entry!: CollectionLogEntry;
-}
+  static tableName = 'collection_log_kill_count';
 
-export default CollectionLogKillCount;
+  static columnNameMappers: ColumnNameMappers = {
+    parse(obj) {
+      return {
+        ...BaseModel.defaultParse(obj),
+        name: obj.name,
+        amount: obj.amount,
+        collectionLogId: obj.collection_log_id,
+        collectionLogEntryId: obj.collection_log_entry_id,
+      };
+    },
+    format(obj) {
+      return {
+        ...BaseModel.defaultFormat(obj),
+        name: obj.name,
+        amount: obj.itemid,
+        collection_log_id: obj.collectionLogId,
+        collection_log_entry_id: obj.collectionLogEntryId,
+      };
+    },
+  };
+
+  static relationMappings = () => ({
+    page: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: CollectionLogPage,
+      join: {
+        from: 'collection_log_kill_count.collection_log_entry_id',
+        to: 'collection_log_entry.id',
+      },
+    },
+    collectionLog: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: CollectionLog,
+      join: {
+        from: 'collection_log_kill_count.collection_log_id',
+        to: 'collection_log.id',
+      },
+    },
+  });
+}
