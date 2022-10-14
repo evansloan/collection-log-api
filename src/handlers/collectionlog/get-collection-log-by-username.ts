@@ -16,4 +16,4 @@ const getByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   return response(200, res);
 };
 
-export const getCollectionLogByUsernameHandler = middleware(getByUsername);
+export const handler = middleware(getByUsername);

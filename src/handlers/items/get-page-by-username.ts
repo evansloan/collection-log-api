@@ -81,4 +81,4 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   };
 };
 
-export const getEntryByUsernameHandler = middleware(getPageByUsername);
+export const handler = middleware(getPageByUsername);

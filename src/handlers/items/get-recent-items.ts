@@ -35,4 +35,4 @@ const recentItems: APIGatewayProxyHandlerV2 = async (event) => {
   };
 };
 
-export const recentItemsHandler = middleware(recentItems);
+export const handler = middleware(recentItems);

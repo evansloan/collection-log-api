@@ -14,4 +14,4 @@ const getUserCount: APIGatewayProxyHandlerV2 = async () => {
   };
 };
 
-export const getUserCountHandler = middleware(getUserCount);
+export const handler = middleware(getUserCount);

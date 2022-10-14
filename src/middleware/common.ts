@@ -3,5 +3,6 @@ import middy from 'middy';
 
 import { DatabaseMiddleware } from './database';
 
-export const middleware = (handler: APIGatewayProxyHandlerV2): Handler<APIGatewayProxyEventV2, APIGatewayProxyResultV2> => middy(handler)
-  .use(DatabaseMiddleware.getInstance());
+export const middleware = (handler: APIGatewayProxyHandlerV2): Handler<APIGatewayProxyEventV2, APIGatewayProxyResultV2> => {
+  return middy(handler).use(DatabaseMiddleware.getInstance());
+};

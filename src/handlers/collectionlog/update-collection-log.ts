@@ -9,7 +9,7 @@ import { errorResponse, successResponse } from '@utils/handler-utils';
 import { v4 } from 'uuid';
 
 const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
-  const accountHash = event.pathParameters?.runelite_id as string;
+  const accountHash = event.pathParameters?.accountHash as string;
   const body = JSON.parse(event.body as string);
   const logData: CollectionLogData = body.collection_log;
 
@@ -163,29 +163,33 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
     }
   }
 
-  await CollectionLogItem.query()
-    .insert(itemsToUpdate)
-    .onConflict('id')
-    .merge([
-      'name',
-      'quantity',
-      'obtained',
-      'sequence',
-      'obtained_at',
-      'updated_at',
-    ]);
+  if (itemsToUpdate.length > 0) {
+    await CollectionLogItem.query()
+      .insert(itemsToUpdate)
+      .onConflict('id')
+      .merge([
+        'name',
+        'quantity',
+        'obtained',
+        'sequence',
+        'obtained_at',
+        'updated_at',
+      ]);
+  }
 
-  await CollectionLogKillCount.query()
-    .insert(kcsToUpdate)
-    .onConflict('id')
-    .merge([
-      'amount',
-      'updated_at',
-    ]);
+  if (kcsToUpdate.length > 0) {
+    await CollectionLogKillCount.query()
+      .insert(kcsToUpdate)
+      .onConflict('id')
+      .merge([
+        'amount',
+        'updated_at',
+      ]);
+  }
 
   await existingLog.$query().update({ isUpdating: false });
 
   return successResponse(200, 'Collection log updated');
 };
 
-export const updateCollectionLogHandler = middleware(updateCollectionLog);
+export const handler = middleware(updateCollectionLog);

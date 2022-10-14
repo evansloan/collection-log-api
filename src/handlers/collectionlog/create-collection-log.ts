@@ -137,4 +137,4 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
   return response(201, res);
 };
 
-export const createHandler = middleware(create);
+export const handler = middleware(create);

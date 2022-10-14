@@ -2,7 +2,7 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
 import { middleware } from '@middleware/common';
 import { CollectionLogUser } from '@models/index';
-import { headers } from '@utils/handler-utils';
+import { headers, response } from '@utils/handler-utils';
 
 const create: APIGatewayProxyHandlerV2 = async (event) => {
   const body = JSON.parse(event.body as string);
@@ -36,13 +36,16 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     accountType,
     accountHash,
     isFemale,
-  });
+  }).onConflict('account_hash')
+    .merge([
+      'username',
+      'account_type',
+      'account_hash',
+      'is_female',
+      'updated_at',
+    ]);
 
-  return {
-    statusCode: 201,
-    headers,
-    body: JSON.stringify(user),
-  };
+  return response(201, user);
 };
 
-export const createHandler = middleware(create);
+export const handler = middleware(create);

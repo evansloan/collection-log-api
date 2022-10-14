@@ -19,4 +19,4 @@ const typeahead: APIGatewayProxyHandlerV2 = async (event) => {
   };
 };
 
-export const typeaheadHandler = middleware(typeahead);
+export const handler = middleware(typeahead);

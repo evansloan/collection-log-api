@@ -28,7 +28,7 @@ export default class CollectionLogKillCount extends BaseModel {
       return {
         ...BaseModel.defaultFormat(obj),
         name: obj.name,
-        amount: obj.itemid,
+        amount: obj.amount,
         collection_log_id: obj.collectionLogId,
         collection_log_entry_id: obj.collectionLogEntryId,
       };

@@ -44,4 +44,4 @@ const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
   };
 };
 
-export const getRankByUsernameHandler = middleware(getRankByUsername);
+export const handler = middleware(getRankByUsername);

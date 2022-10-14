@@ -65,4 +65,4 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
   };
 };
 
-export const getHiscoresHandler = middleware(getHiscores);
+export const handler = middleware(getHiscores);

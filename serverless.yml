@@ -13,6 +13,7 @@ provider:
 
   environment:
     STAGE_NAME: ${self:provider.stage}
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
     DB_DIALECT: postgres
     DB_NAME: ${env:DB_NAME}
@@ -42,7 +43,7 @@ provider:
 
 functions:
   create-collection-log:
-    handler: src/handlers/collectionlog/create-collection-log.createHandler
+    handler: src/handlers/collectionlog/create-collection-log.handler
     timeout: 29
     events:
       - httpApi:
@@ -50,7 +51,7 @@ functions:
           method: post
 
   get-collection-log-by-username:
-    handler: src/handlers/collectionlog/get-by-username.getCollectionLogByUsernameHandler
+    handler: src/handlers/collectionlog/get-collection-log-by-username.handler
     timeout: 25
     events:
       - httpApi:
@@ -58,37 +59,44 @@ functions:
           method: get
 
   update-collection-log:
-    handler: src/handlers/collectionlog/update-collection-log.updateCollectionLogHandler
+    handler: src/handlers/collectionlog/update-collection-log.handler
     timeout: 29
     memorySize: 2048
     events:
       - httpApi:
-          path: /collectionlog/{runelite_id}
+          path: /collectionlog/{accountHash}
           method: put
 
+  get-collection-log-exists:
+    handler: src/handlers/collectionlog/get-collection-log-exists.handler
+    events:
+      - httpApi:
+          path: /collectionlog/exists/{accountHash}
+          method: get
+
   create-user:
-    handler: src/handlers/user/create-user.createHandler
+    handler: src/handlers/user/create-user.handler
     events:
       - httpApi:
           path: /user
           method: post
 
   get-user-typeahead:
-    handler: src/handlers/user/get-user-typeahead.typeaheadHandler
+    handler: src/handlers/user/get-user-typeahead.handler
     events:
       - httpApi:
           path: /user/typeahead/{username}
           method: get
 
   get-user-count:
-    handler: src/handlers/user/get-user-count.getUserCountHandler
+    handler: src/handlers/user/get-user-count.handler
     events:
       - httpApi:
           path: /user/count
           method: get
 
   get-items-recent:
-    handler: src/handlers/items/get-recent-items.recentItemsHandler
+    handler: src/handlers/items/get-recent-items.handler
     timeout: 25
     events:
       - httpApi:
@@ -96,14 +104,14 @@ functions:
           method: get
 
   get-items-page-by-username:
-    handler: src/handlers/items/get-page-by-username.getPageByUsernameHandler
+    handler: src/handlers/items/get-page-by-username.handler
     events:
       - httpApi:
           path: /items/user/{username}
           method: get
 
   get-items-recent-global:
-    handler: src/handlers/items/get-recent-items-global.recentItemsGlobalHandler
+    handler: src/handlers/items/get-recent-items-global.handler
     timeout: 25
     events:
       - httpApi:
@@ -111,7 +119,7 @@ functions:
           method: get
 
   get-hiscores:
-    handler: src/handlers/hiscores/get-hiscores.getHiscoresHandler
+    handler: src/handlers/hiscores/get-hiscores.handler
     timeout: 25
     events:
       - httpApi:
@@ -119,7 +127,7 @@ functions:
           method: get
 
   get-hiscores-rank-by-username:
-    handler: src/handlers/hiscores/get-rank-by-username.getRankByUsernameHandler
+    handler: src/handlers/hiscores/get-rank-by-username.handler
     events:
       - httpApi:
           path: /hiscores/rank/{username}
