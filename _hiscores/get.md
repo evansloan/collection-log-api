@@ -59,7 +59,7 @@ right_code_blocks:
             "username": "Durial321",
             "accountType": "NORMAL",
             "rank": 1,
-            "obtained: "767",
+            "obtained": 767,
             "total": 1430
           },
           ...
