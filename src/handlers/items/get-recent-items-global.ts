@@ -6,8 +6,7 @@ import { CollectionLog, CollectionLogItem, CollectionLogUser } from '@models/ind
 import { headers } from '@utils/handler-utils';
 
 const recentItemsGlobal: APIGatewayProxyHandlerV2 = async (event, context) => {
-  const dbContext = context as DatabaseContext;
-  const { database: db } = dbContext;
+  const { database: db } = context as DatabaseContext;
 
   const itemSubSelect = {
     name: 'name',

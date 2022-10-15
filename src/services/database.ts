@@ -1,4 +1,4 @@
-import Knex from 'knex';
+import knex, { Knex } from 'knex';
 
 export class DatabaseService {
   private static readonly CLIENT: string = 'pg';
@@ -15,7 +15,7 @@ export class DatabaseService {
 
   private static readonly DEBUG: boolean = !!process.env.DEBUG;
 
-  private readonly connection;
+  private readonly connection: Knex;
 
   constructor() {
     const knexConfig = {
@@ -34,7 +34,7 @@ export class DatabaseService {
       debug: DatabaseService.DEBUG,
     };
 
-    this.connection = Knex(knexConfig);
+    this.connection = knex(knexConfig);
   }
 
   public getConnection = () => {

@@ -3,7 +3,7 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { middleware } from '@middleware/common';
 import { DatabaseContext } from '@middleware/database';
 import { CollectionLog, CollectionLogUser } from '@models/index';
-import { headers } from '@utils/handler-utils';
+import { response } from '@utils/handler-utils';
 
 const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
   const { database: db } = context as DatabaseContext;
@@ -29,19 +29,7 @@ const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
     .whereRaw('LOWER(username) = ?', [paramsUsername.toLowerCase()])
     .first();
 
-  const res = {
-    username: paramsUsername,
-    ranks:  {
-      total: 0,
-      unique: rank?.pos,
-    },
-  };
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(res),
-  };
+  return response(200, { rank: rank?.pos });
 };
 
 export const handler = middleware(getRankByUsername);
