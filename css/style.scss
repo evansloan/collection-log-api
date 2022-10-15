@@ -1,0 +1,34 @@
+---
+layout: null
+sitemap: false
+---
+
+$brand-color: #493F35;
+
+$scheme-primary: #212121;
+$scheme-light: #484848;
+$scheme-dark: #000000;
+
+$scheme-secondary: #424242;
+$scheme-secondary-light: #6D6D6D;
+$scheme-secondary-dark: #151515;
+
+$scheme-accent: #2196F3;
+
+$nav-header-height: 60px;
+$nav-width: 210px;
+
+$space: 20px;
+
+$mobile-break: 700px;
+
+{% if site.baseurl %}
+	$base-url: {{ site.baseurl }};
+{% else %}
+	$base-url: '';
+{% endif %}
+
+@import "mixins";
+@import "main";
+@import "monaki";
+@import "cloudcannon";
