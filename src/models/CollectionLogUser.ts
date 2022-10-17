@@ -1,70 +1,56 @@
-import {
-  AllowNull,
-  Column,
-  DataType,
-  Default,
-  DefaultScope,
-  HasOne,
-  Model,
-  Index,
-  PrimaryKey,
-  Table,
-  Scopes,
-} from 'sequelize-typescript';
+import { ColumnNameMappers, Model, Modifiers } from 'objection';
 
+import { BaseModel } from './BaseModel';
 import { CollectionLog } from '@models/index';
 
-@DefaultScope(() => ({
-  attributes: [
-    'id',
-    'username',
-    'accountType',
-    'isBanned',
-    'created_at',
-    'updated_at',
-  ],
-}))
-@Scopes(() => ({
-  info: {
-    attributes: [
-      ['username', 'username'],
-      ['account_type', 'account_type'],
-      ['is_female', 'is_female'],
-    ],
-  },
-}))
-@Table({
-  tableName: 'collection_log_user',
-  underscored: true,
-  paranoid: true,
-})
-class CollectionLogUser extends Model {
-
-  @Index
-  @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  id!: string;
-
-  @AllowNull(false)
-  @Column
+export default class CollectionLogUser extends BaseModel {
   username!: string;
-
-  @Column
-  accountType?: string;
-
-  @Column
-  runeliteId?: string;
-
-  @Column
-  accountHash?: string;
-
-  @Default(false)
-  @Column
+  accountType!: string;
+  accountHash!: string;
   isBanned!: boolean;
+  isFemale!: boolean;
 
-  @HasOne(() => CollectionLog)
   collectionLog?: CollectionLog;
-}
 
-export default CollectionLogUser;
+  static tableName = 'collection_log_user';
+
+  static get hidden() {
+    return ['accountHash'];
+  }
+
+  static columnNameMappers: ColumnNameMappers = {
+    parse(obj) {
+      return {
+        ...BaseModel.defaultParse(obj),
+        username: obj.username,
+        accountType: obj.account_type,
+        accountHash: obj.account_hash,
+        isBanned: obj.is_banned,
+        isFemale: obj.is_female,
+      };
+    },
+    format(obj) {
+      return {
+        ...BaseModel.defaultFormat(obj),
+        username: obj.username,
+        account_type: obj.accountType,
+        account_hash: obj.accountHash,
+        is_banned: obj.isBanned,
+        is_female: obj.isFemale,
+      };
+    },
+  };
+
+  static relationMappings = () => ({
+    collectionLog: {
+      relation: Model.HasOneRelation,
+      modelClass: CollectionLog,
+      join: {
+        from: 'collection_log_user.id',
+        to: 'collection_log.user_id',
+      },
+    },
+  });
+
+  static modifiers: Modifiers = {};
+}

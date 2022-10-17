@@ -5,11 +5,12 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'local'}
   region: us-east-1
   logRetentionInDays: 14
+  timeout: 29
 
   environment:
     STAGE_NAME: ${self:provider.stage}
@@ -41,88 +42,101 @@ provider:
           Resource: '*'
 
 functions:
+  # Collection log endpoints
   create-collection-log:
-    handler: src/handlers/collectionlog.create
-    timeout: 29
+    handler: src/handlers/collectionlog/create-collection-log.handler
     events:
       - httpApi:
           path: /collectionlog
           method: post
 
   get-collection-log-by-username:
-    handler: src/handlers/collectionlog.getByUsername
-    timeout: 25
+    handler: src/handlers/collectionlog/get-collection-log-by-username.handler
     events:
       - httpApi:
           path: /collectionlog/user/{username}
           method: get
 
   update-collection-log:
-    handler: src/handlers/collectionlog.update
-    timeout: 29
+    handler: src/handlers/collectionlog/update-collection-log.handler
     memorySize: 2048
     events:
       - httpApi:
-          path: /collectionlog/{runelite_id}
+          path: /collectionlog/{accountHash}
           method: put
 
   get-collection-log-exists:
-    handler: src/handlers/collectionlog.collectionLogExists
+    handler: src/handlers/collectionlog/get-collection-log-exists.handler
     events:
       - httpApi:
-          path: /collectionlog/exists/{runeliteId}
+          path: /collectionlog/exists/{accountHash}
           method: get
 
+  # User endpoints
   create-user:
-    handler: src/handlers/user.create
+    handler: src/handlers/user/create-user.handler
     events:
       - httpApi:
           path: /user
           method: post
 
+  get-user-typeahead:
+    handler: src/handlers/user/get-user-typeahead.handler
+    events:
+      - httpApi:
+          path: /user/typeahead/{username}
+          method: get
+
   get-user-count:
-    handler: src/handlers/user.count
+    handler: src/handlers/user/get-user-count.handler
     events:
       - httpApi:
           path: /user/count
           method: get
 
-  get-hiscores:
-    handler: src/handlers/hiscores.get
-    timeout: 25
-    events:
-      - httpApi:
-          path: /hiscores/{type}/{page}
-          method: get
-
-  get-hiscores-rank-by-username:
-    handler: src/handlers/hiscores.getRankByUsername
-    events:
-      - httpApi:
-          path: /hiscores/rank/{username}
-          method: get
-
+  # Items endpoints
   get-items-recent:
-    handler: src/handlers/items.recentItems
-    timeout: 25
+    handler: src/handlers/items/get-recent.handler
     events:
       - httpApi:
           path: /items/recent/{username}
           method: get
 
-  get-items-entry-by-username:
-    handler: src/handlers/items.getEntryItemsByUsername
+  get-items-page-by-username:
+    handler: src/handlers/items/get-page-by-username.handler
     events:
       - httpApi:
           path: /items/user/{username}
           method: get
 
-  get-items-typeahead:
-    handler: src/handlers/items.typeahead
+  get-items-recent-global:
+    handler: src/handlers/items/get-recent-global.handler
     events:
       - httpApi:
-          path: /items/typeahead/{name}
+          path: /items/global
           method: get
+
+  # Hiscores endpoints
+  get-hiscores:
+    handler: src/handlers/hiscores/get-hiscores.handler
+    events:
+      - httpApi:
+          path: /hiscores/{page}
+          method: get
+
+  get-hiscores-rank-by-username:
+    handler: src/handlers/hiscores/get-rank-by-username.handler
+    events:
+      - httpApi:
+          path: /hiscores/rank/{username}
+          method: get
+
+  # Scheduled tasks
+  build-items-recent-global:
+    handler: src/handlers/items/build-recent-global.handler
+    timeout: 600
+    events:
+      - schedule: rate(10 minutes)
 
 plugins:
   - serverless-plugin-typescript

@@ -16,9 +16,13 @@
     "emitDecoratorMetadata": true,
     "baseUrl": "./src/",
     "paths": {
+      "@dao/*": ["dao/*"],
+      "@lib/*": ["lib/*"],
+      "@middleware/*": ["middleware/*"],
       "@models/*": ["models/*"],
       "@services/*": ["services/*"],
-      "@datatypes/*": ["types/*"]
+      "@datatypes/*": ["types/*"],
+      "@utils/*": ["utils/*"]
     }
   },
   "include": [

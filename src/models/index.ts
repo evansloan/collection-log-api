@@ -1,15 +1,15 @@
 import CollectionLog from '@models/CollectionLog';
-import CollectionLogEntry from '@models/CollectionLogEntry';
 import CollectionLogItem from '@models/CollectionLogItem';
 import CollectionLogKillCount from '@models/CollectionLogKillCount';
+import CollectionLogPage from '@models/CollectionLogPage';
 import CollectionLogTab from '@models/CollectionLogTab';
-import CollectionLogUser from '@models/CollectionLogUser';
+import CollectionLogUser from '@models/CollectionlogUser';
 
 export {
   CollectionLog,
-  CollectionLogEntry,
   CollectionLogItem,
   CollectionLogKillCount,
+  CollectionLogPage,
   CollectionLogTab,
   CollectionLogUser,
 };

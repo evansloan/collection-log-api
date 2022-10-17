@@ -1,16 +1,67 @@
-import { Sequelize } from 'sequelize-typescript';
+import knex, { Knex } from 'knex';
+import { Model } from 'objection';
 
-const createConnection = () => {
-  const db = new Sequelize({
-    database: process.env.DB_NAME,
-    dialect: 'postgres',
-    username: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT as string),
-  });
+export class DatabaseService {
+  private static readonly CLIENT: string = 'pg';
 
-  return db;
-};
+  private static readonly HOST: string = process.env.DB_HOST as string;
 
-export default createConnection();
+  private static readonly PORT: number = Number(process.env.DB_PORT);
+
+  private static readonly USER: string = process.env.DB_USER as string;
+
+  private static readonly PASSWORD: string = process.env.DB_PASS as string;
+
+  private static readonly NAME: string = process.env.DB_NAME as string;
+
+  private static readonly DEBUG: boolean = !!process.env.DEBUG;
+
+  private static instance: DatabaseService;
+
+  private connection: Knex|undefined;
+
+  private static readonly knexConfig = {
+    client: DatabaseService.CLIENT,
+    connection: {
+      host: DatabaseService.HOST,
+      port: DatabaseService.PORT,
+      user: DatabaseService.USER,
+      password: DatabaseService.PASSWORD,
+      database: DatabaseService.NAME,
+    },
+    pool: {
+      min: 1,
+      max: 1,
+      acquireTimeoutMillis: 30000,
+      createTimeoutMillis: 1500,
+      createRetryIntervalMillis: 500,
+      propagateCreateError: false,
+    },
+    debug: DatabaseService.DEBUG,
+  };
+
+  constructor() {
+    this.connection = knex(DatabaseService.knexConfig);
+    Model.knex(this.connection);
+  }
+
+  public static getInstance = () => {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
+    }
+
+    return DatabaseService.instance;
+  };
+
+  public getConnection = () => {
+    if (!this.connection) {
+      this.connection = knex(DatabaseService.knexConfig);
+    }
+    return this.connection;
+  };
+
+  public destroyConnection = async () => {
+    await this.connection?.destroy();
+    this.connection = undefined;
+  };
+}

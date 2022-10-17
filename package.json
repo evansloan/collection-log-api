@@ -18,29 +18,27 @@
     "eslint": "^8.17.0",
     "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.26.0",
-    "prettier": "^2.3.2",
-    "sequelize-cli": "^6.4.1",
     "serverless": "^2.52.1",
     "serverless-domain-manager": "^5.2.0",
     "serverless-offline": "^8.5.0",
-    "serverless-offline-sqs": "^6.0.0",
     "serverless-plugin-typescript": "^1.1.9",
     "serverless-tscpaths": "^0.0.6",
     "tsconfig-paths": "^3.14.1",
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@types/sequelize": "^4.28.11",
+    "@middy/core": "^3.6.1",
+    "@middy/do-not-wait-for-empty-event-loop": "^3.6.1",
     "@types/uuid": "^8.3.3",
     "@types/validator": "^13.7.1",
     "aws-lambda": "^1.0.6",
     "aws-sdk": "^2.953.0",
     "dotenv": "^16.0.0",
+    "knex": "^2.3.0",
+    "objection": "^3.0.1",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.1.13",
-    "sequelize": "^6.16.1",
-    "sequelize-typescript": "^2.1.2",
     "uuid": "^8.3.2"
   }
 }
