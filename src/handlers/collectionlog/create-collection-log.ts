@@ -18,12 +18,12 @@ import CollectionLogDao from '@dao/CollectionLogDao';
 const create: APIGatewayProxyHandlerV2 = async (event) => {
   const body = JSON.parse(event.body as string);
 
-  if (!body.account_hash) {
+  if (!body.runelite_id) {
     return errorResponse(400, 'Invalid post body');
   }
 
   const user = await CollectionLogUser.query()
-    .findOne('account_hash', body.account_hash)
+    .findOne('account_hash', body.runelite_id)
     .withGraphJoined('collectionLog');
 
   if (!user) {

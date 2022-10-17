@@ -4,6 +4,7 @@ export const headers = {
 };
 
 export const response = (statusCode: number, body: any) => {
+  console.log(statusCode, body);
   return {
     statusCode,
     headers,

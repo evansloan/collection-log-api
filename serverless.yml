@@ -5,15 +5,15 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'local'}
   region: us-east-1
   logRetentionInDays: 14
+  timeout: 29
 
   environment:
     STAGE_NAME: ${self:provider.stage}
-    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
     DB_DIALECT: postgres
     DB_NAME: ${env:DB_NAME}
@@ -42,9 +42,9 @@ provider:
           Resource: '*'
 
 functions:
+  # Collection log endpoints
   create-collection-log:
     handler: src/handlers/collectionlog/create-collection-log.handler
-    timeout: 29
     events:
       - httpApi:
           path: /collectionlog
@@ -52,7 +52,6 @@ functions:
 
   get-collection-log-by-username:
     handler: src/handlers/collectionlog/get-collection-log-by-username.handler
-    timeout: 25
     events:
       - httpApi:
           path: /collectionlog/user/{username}
@@ -60,7 +59,6 @@ functions:
 
   update-collection-log:
     handler: src/handlers/collectionlog/update-collection-log.handler
-    timeout: 29
     memorySize: 2048
     events:
       - httpApi:
@@ -74,6 +72,7 @@ functions:
           path: /collectionlog/exists/{accountHash}
           method: get
 
+  # User endpoints
   create-user:
     handler: src/handlers/user/create-user.handler
     events:
@@ -95,9 +94,9 @@ functions:
           path: /user/count
           method: get
 
+  # Items endpoints
   get-items-recent:
-    handler: src/handlers/items/get-recent-items.handler
-    timeout: 25
+    handler: src/handlers/items/get-recent.handler
     events:
       - httpApi:
           path: /items/recent/{username}
@@ -111,16 +110,15 @@ functions:
           method: get
 
   get-items-recent-global:
-    handler: src/handlers/items/get-recent-items-global.handler
-    timeout: 25
+    handler: src/handlers/items/get-recent-global.handler
     events:
       - httpApi:
           path: /items/global
           method: get
 
+  # Hiscores endpoints
   get-hiscores:
     handler: src/handlers/hiscores/get-hiscores.handler
-    timeout: 25
     events:
       - httpApi:
           path: /hiscores/{page}
@@ -132,6 +130,13 @@ functions:
       - httpApi:
           path: /hiscores/rank/{username}
           method: get
+
+  # Scheduled tasks
+  build-items-recent-global:
+    handler: src/handlers/items/build-recent-global.handler
+    timeout: 600
+    events:
+      - schedule: rate(10 minutes)
 
 plugins:
   - serverless-plugin-typescript

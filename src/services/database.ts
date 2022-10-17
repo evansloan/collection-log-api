@@ -1,4 +1,5 @@
 import knex, { Knex } from 'knex';
+import { Model } from 'objection';
 
 export class DatabaseService {
   private static readonly CLIENT: string = 'pg';
@@ -15,29 +16,52 @@ export class DatabaseService {
 
   private static readonly DEBUG: boolean = !!process.env.DEBUG;
 
-  private readonly connection: Knex;
+  private static instance: DatabaseService;
+
+  private connection: Knex|undefined;
+
+  private static readonly knexConfig = {
+    client: DatabaseService.CLIENT,
+    connection: {
+      host: DatabaseService.HOST,
+      port: DatabaseService.PORT,
+      user: DatabaseService.USER,
+      password: DatabaseService.PASSWORD,
+      database: DatabaseService.NAME,
+    },
+    pool: {
+      min: 1,
+      max: 1,
+      acquireTimeoutMillis: 30000,
+      createTimeoutMillis: 1500,
+      createRetryIntervalMillis: 500,
+      propagateCreateError: false,
+    },
+    debug: DatabaseService.DEBUG,
+  };
 
   constructor() {
-    const knexConfig = {
-      client: DatabaseService.CLIENT,
-      connection: {
-        host: DatabaseService.HOST,
-        port: DatabaseService.PORT,
-        user: DatabaseService.USER,
-        password: DatabaseService.PASSWORD,
-        database: DatabaseService.NAME,
-      },
-      pool: {
-        min: 0,
-        max: 16,
-      },
-      debug: DatabaseService.DEBUG,
-    };
-
-    this.connection = knex(knexConfig);
+    this.connection = knex(DatabaseService.knexConfig);
+    Model.knex(this.connection);
   }
 
+  public static getInstance = () => {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
+    }
+
+    return DatabaseService.instance;
+  };
+
   public getConnection = () => {
+    if (!this.connection) {
+      this.connection = knex(DatabaseService.knexConfig);
+    }
     return this.connection;
+  };
+
+  public destroyConnection = async () => {
+    await this.connection?.destroy();
+    this.connection = undefined;
   };
 }

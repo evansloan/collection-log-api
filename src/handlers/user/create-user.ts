@@ -17,33 +17,27 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
 
   console.log(`STARTING USER CREATE FOR ${body.username}`);
 
-  const existingUser = await CollectionLogUser.query().findOne({ account_hash: body.account_hash });
+  const { username, account_type: accountType, account_hash: accountHash, is_female: isFemale } = body;
+  const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
 
   if (existingUser) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(existingUser),
-    };
+    await existingUser.$query().update({
+      username,
+      accountType,
+      isFemale,
+    });
+
+    return response(200, existingUser);
   }
 
   console.log(`EXISTING USER FOR ${body.username} NOT FOUND. STARTING USER CREATE`);
-
-  const { username, account_type: accountType, account_hash: accountHash, is_female: isFemale } = body;
 
   const user = await CollectionLogUser.query().insert({
     username,
     accountType,
     accountHash,
     isFemale,
-  }).onConflict('account_hash')
-    .merge([
-      'username',
-      'account_type',
-      'account_hash',
-      'is_female',
-      'updated_at',
-    ]);
+  });
 
   return response(201, user);
 };

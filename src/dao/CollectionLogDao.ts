@@ -85,6 +85,7 @@ export default class CollectionLogDao {
         itemId,
         quantity,
         obtained,
+        obtainedAt,
         sequence,
         name: itemName,
         page: {
@@ -109,6 +110,7 @@ export default class CollectionLogDao {
         name: itemName,
         quantity,
         obtained,
+        obtainedAt,
         sequence,
       });
     });
