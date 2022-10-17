@@ -21,7 +21,7 @@ left_code_blocks:
     title: Python
     language: python
   - code_block: |-
-      const axios = requite('axios');
+      const axios = require('axios');
 
       const username = 'durial321';
       const url = `https://api.collectionlog.net/hiscores/rank/${username}`;

@@ -16,7 +16,7 @@ left_code_blocks:
     title: Python
     language: python
   - code_block: |-
-      const axios = requite('axios');
+      const axios = require('axios');
 
       const url = `https://api.collectionlog.net/items/global`;
 
