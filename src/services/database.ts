@@ -56,6 +56,7 @@ export class DatabaseService {
   public getConnection = () => {
     if (!this.connection) {
       this.connection = knex(DatabaseService.knexConfig);
+      Model.knex(this.connection);
     }
     return this.connection;
   };

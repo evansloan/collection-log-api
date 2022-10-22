@@ -14,6 +14,7 @@ provider:
 
   environment:
     STAGE_NAME: ${self:provider.stage}
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
     DB_DIALECT: postgres
     DB_NAME: ${env:DB_NAME}
