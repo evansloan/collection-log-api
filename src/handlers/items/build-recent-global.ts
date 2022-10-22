@@ -31,7 +31,7 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
       deleted_at: null,
     })
     // eslint-disable-next-line quotes
-    .andWhereRaw("obtained_at >= NOW() - INTERVAL '12 DAYS'");
+    .andWhereRaw("obtained_at >= NOW() - INTERVAL '12 HOURS'");
 
   const items = await db.with('items', allItemsQuery)
     .select({ ...select, username: 'username' })
