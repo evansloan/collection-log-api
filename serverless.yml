@@ -13,6 +13,7 @@ provider:
   timeout: 29
 
   environment:
+    SERVICE_NAME: ${self:service}
     STAGE_NAME: ${self:provider.stage}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
 
@@ -72,6 +73,10 @@ functions:
       - httpApi:
           path: /collectionlog/exists/{accountHash}
           method: get
+  
+  update-collection-log-details:
+    handler: src/handlers/collectionlog/update-collection-log-details.handler
+    timeout: 120
 
   # User endpoints
   create-user:
