@@ -41,6 +41,8 @@ provider:
             - ec2:DeleteNetworkInterface
             - ec2:AssignPrivateIpAddresses
             - ec2:UnassignPrivateIpAddresses
+            - lambda:InvokeAsync
+            - lambda:InvokeFunction
           Resource: '*'
 
 functions:
