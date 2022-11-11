@@ -39,12 +39,20 @@ exports.up = (knex) => {
         .defaultTo(0)
         .unsigned();
 
-      table.integer('group_member_count')
+      table.integer('group_user_count')
         .defaultTo(0)
         .unsigned();
 
       table.boolean('is_updating')
         .defaultTo(false);
+
+      table.timestamp('created_at', { useTz: true })
+        .defaultTo(knex.fn.now());
+
+      table.timestamp('updated_at', { useTz: true })
+        .defaultTo(knex.fn.now());
+
+      table.timestamp('deleted_at', { useTz: true });
     })
 
     .createTable(GROUP_USERS_TABLE_NAME, (table) => {
@@ -65,6 +73,14 @@ exports.up = (knex) => {
         .onDelete('CASCADE')
         .notNullable()
         .index();
+
+      table.timestamp('created_at', { useTz: true })
+        .defaultTo(knex.fn.now());
+
+      table.timestamp('updated_at', { useTz: true })
+        .defaultTo(knex.fn.now());
+
+      table.timestamp('deleted_at', { useTz: true });
     });
 };
 
