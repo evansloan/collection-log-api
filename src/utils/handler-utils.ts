@@ -1,3 +1,8 @@
+interface ValidationError {
+  type: string;
+  columns: string[];
+}
+
 export const headers = {
   'content-type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -17,5 +22,9 @@ export const successResponse = (statusCode: number, message: string) => {
 };
 
 export const errorResponse = (statusCode: number, error: string) => {
+  return response(statusCode, { error });
+};
+
+export const validationErrorResponse = (statusCode: number, error: ValidationError) => {
   return response(statusCode, { error });
 };
