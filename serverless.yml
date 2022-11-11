@@ -68,7 +68,14 @@ functions:
       - httpApi:
           path: /collectionlog/exists/{accountHash}
           method: get
-  
+
+  get-collection-log-list-by-usernames:
+    handler: src/handlers/collectionlog/get-collection-log-list-by-usernames.handler
+    events:
+      - httpApi:
+          path: /collectionlog/list
+          method: get
+
   update-collection-log-details:
     handler: src/handlers/collectionlog/update-collection-log-details.handler
     timeout: 120
@@ -100,6 +107,13 @@ functions:
     events:
       - httpApi:
           path: /user/count
+          method: get
+
+  get-user-by-username:
+    handler: src/handlers/user/get-user-by-username.handler
+    events:
+      - httpApi:
+          path: /user/username/{username}
           method: get
 
   get-user-settings:
@@ -153,6 +167,40 @@ functions:
           path: /hiscores/ranks/{username}
           method: get
 
+  # Group endpoints
+  create-group:
+    handler: src/handlers/group/create-group.handler
+    events:
+      - httpApi:
+          path: /group
+          method: post
+
+  get-group-by-name:
+    handler: src/handlers/group/get-group-by-name.handler
+    events:
+      - httpApi:
+          path: /group/name/{name}
+          method: get
+
+  get-group-list:
+    handler: src/handlers/group/get-group-list.handler
+    events:
+      - httpApi:
+          path: /group/list
+          method: get
+
+  get-group-rank-by-name:
+    handler: src/handlers/group/get-group-rank-by-name.handler
+    events:
+      - httpApi:
+          path: /group/rank/{name}
+          method: get
+
+  update-group-item-counts:
+    handler: src/handlers/group/update-group-item-counts.handler
+    timeout: 120
+
+
   # Scheduled tasks
   build-items-recent-global:
     handler: src/handlers/items/build-recent-global.handler
@@ -165,7 +213,7 @@ plugins:
   - serverless-tscpaths
   - serverless-domain-manager
   - serverless-offline
- 
+
 custom:
   dev:
     domainName: dev.api.collectionlog.net

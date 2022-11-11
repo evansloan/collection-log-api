@@ -1,4 +1,4 @@
-import { ColumnNameMappers, Model, Modifiers } from 'objection';
+import { ColumnNameMappers, Model, QueryBuilder } from 'objection';
 
 import { BaseModel } from './BaseModel';
 import { CollectionLog } from '@models/index';
@@ -58,5 +58,9 @@ export default class CollectionLogUser extends BaseModel {
     },
   });
 
-  static modifiers: Modifiers = {};
+  static modifiers = {
+    withCollectionLog(query: QueryBuilder<Model>) {
+      query.withGraphJoined('collectionLog');
+    },
+  };
 }
