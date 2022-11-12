@@ -20,7 +20,7 @@ export class DatabaseService {
 
   private connection: Knex|undefined;
 
-  private static readonly knexConfig = {
+  private static readonly knexConfig: Knex.Config = {
     client: DatabaseService.CLIENT,
     connection: {
       host: DatabaseService.HOST,
@@ -30,12 +30,14 @@ export class DatabaseService {
       database: DatabaseService.NAME,
     },
     pool: {
-      min: 1,
+      min: 0,
       max: 1,
       acquireTimeoutMillis: 30000,
       createTimeoutMillis: 1500,
       createRetryIntervalMillis: 500,
-      propagateCreateError: false,
+      idleTimeoutMillis: 500,
+      reapIntervalMillis: 500,
+      propagateCreateError: true,
     },
     debug: DatabaseService.DEBUG,
   };
