@@ -37,7 +37,7 @@ export class DatabaseService {
       createRetryIntervalMillis: 500,
       idleTimeoutMillis: 500,
       reapIntervalMillis: 500,
-      propagateCreateError: true,
+      propagateCreateError: false,
     },
     debug: DatabaseService.DEBUG,
   };

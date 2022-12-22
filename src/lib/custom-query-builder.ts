@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
@@ -22,7 +19,7 @@ export class CustomQueryBuilder<M extends Model, R = M[]> extends QueryBuilder<M
   public SingleQueryBuilderType!: CustomQueryBuilder<M, M>;
   public MaybeSingleQueryBuilderType!: CustomQueryBuilder<M, M | undefined>;
   public NumberQueryBuilderType!: CustomQueryBuilder<M, number>;
-  public PageQueryBiulderType!: CustomQueryBuilder<M, Page<M>>;
+  public PageQueryBuilderType!: CustomQueryBuilder<M, Page<M>>;
 
   public execute(): Promise<R> {
     if (this.isFind() && !this.context().includeDeleted) {
