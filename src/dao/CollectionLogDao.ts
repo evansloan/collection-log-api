@@ -33,15 +33,16 @@ export default class CollectionLogDao {
 
   static async getObtainedItems(collectionLog: CollectionLog) {
     const items = await collectionLog.$relatedQuery('items')
-      .distinct('item_id AS id')
-      .select(
-        'name',
-        'quantity',
-        'obtained',
-        'obtained_at'
-      )
+      .select({
+        id: 'item_id',
+        obtained: raw('BOOL_OR(obtained)'),
+      })
+      .max('name AS name')
+      .max('quantity AS quantity')
+      .max('obtained_at AS obtained_at')
       .where('obtained', true)
-      .orderBy('obtained_at', 'DESC')
+      .groupBy('item_id')
+      .orderBy(raw('MAX(obtained_at)'), 'DESC')
       .limit(5);
 
     return items;
