@@ -15,6 +15,17 @@ import {
 import { errorResponse, response } from '@utils/handler-utils';
 import CollectionLogDao from '@dao/CollectionLogDao';
 
+/**
+ * Old page names that should be ignored.
+ * These pages can still exist in data provided
+ * via plugin, ignore them if we come across them.
+ */
+const INVALID_PAGES: string[] = [
+  'Callisto',
+  'Venenatis',
+  'Vet\'ion',
+];
+
 const create: APIGatewayProxyHandlerV2 = async (event) => {
   const body = JSON.parse(event.body as string);
 
@@ -83,6 +94,10 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
        */
       let page = collectionLogPages.find((page) => page.name == pageName);
       if (!page) {
+        if (INVALID_PAGES.includes(pageName)) {
+          continue;
+        }
+
         page = await CollectionLogPage.query().insert({
           collectionLogTabId: tab.id,
           name: pageName,

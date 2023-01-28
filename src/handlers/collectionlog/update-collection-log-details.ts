@@ -20,6 +20,17 @@ interface ItemUpdateEvent {
 }
 
 /**
+ * Old page names that should be ignored.
+ * These pages can still exist in data provided
+ * via plugin, ignore them if we come across them.
+ */
+const INVALID_PAGES: string[] = [
+  'Callisto',
+  'Venenatis',
+  'Vet\'ion',
+];
+
+/**
  * Lambda function to handle updating items and kill counts.
  *
  * Logic exists in it's own lambda due to hard 30 second timeout
@@ -67,6 +78,10 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
        */
       let page = collectionLogPages.find((page) => page.name == pageName);
       if (!page) {
+        if (INVALID_PAGES.includes(pageName)) {
+          continue;
+        }
+
         page = await CollectionLogPage.query().insert({
           collectionLogTabId: tab.id,
           name: pageName,
