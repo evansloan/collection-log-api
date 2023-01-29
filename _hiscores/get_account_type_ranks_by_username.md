@@ -1,5 +1,5 @@
 ---
-title: /hiscores/rank/:username
+title: /hiscores/ranks/:username
 position_number: 2
 type: get
 description: Get a user's account type hiscores ranks
