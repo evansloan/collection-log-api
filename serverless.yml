@@ -139,7 +139,7 @@ functions:
           path: /hiscores/rank/{username}
           method: get
 
-  get-hiscores-account-type-ranks-by-username:
+  get-hiscores-ranks-by-username:
     handler: src/handlers/hiscores/get-account-type-ranks-by-username.handler
     events:
       - httpApi:
