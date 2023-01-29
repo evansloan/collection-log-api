@@ -23,7 +23,7 @@ left_code_blocks:
   - code_block: |-
       const axios = require('axios');
 
-      const username = 'durial321;
+      const username = 'durial321';
       const url = `https://api.collectionlog.net/collectionlog/user/${username}`
 
       axios.get(url)
