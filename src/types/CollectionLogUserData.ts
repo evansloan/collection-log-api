@@ -7,6 +7,17 @@ export enum AccountType {
   HARDCORE_GROUP_IRONMAN = 'HARDCORE_GROUP_IRONMAN'
 }
 
+export const IRONMAN_TYPES = [
+  AccountType.IRONMAN,
+  AccountType.HARDCORE_IRONMAN,
+  AccountType.ULTIMATE_IRONMAN,
+];
+
+export const GROUP_IRONMAN_TYPES = [
+  AccountType.GROUP_IRONMAN,
+  AccountType.HARDCORE_GROUP_IRONMAN,
+];
+
 interface CollectionLogUserData {
   accountHash?: string;
   accountType: AccountType;

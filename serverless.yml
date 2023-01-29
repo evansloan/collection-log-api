@@ -139,6 +139,13 @@ functions:
           path: /hiscores/rank/{username}
           method: get
 
+  get-hiscores-account-type-ranks-by-username:
+    handler: src/handlers/hiscores/get-account-type-ranks-by-username.handler
+    events:
+      - httpApi:
+          path: /hiscores/ranks/{username}
+          method: get
+
   # Scheduled tasks
   build-items-recent-global:
     handler: src/handlers/items/build-recent-global.handler

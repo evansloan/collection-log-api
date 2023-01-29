@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
-import { AccountType } from '@datatypes/CollectionLogUserData';
+import { AccountType, GROUP_IRONMAN_TYPES, IRONMAN_TYPES } from '@datatypes/CollectionLogUserData';
 import { middleware } from '@middleware/common';
 import { DatabaseContext } from '@middleware/database';
 import { CollectionLog, CollectionLogUser } from '@models/index';
@@ -40,20 +40,15 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
     .offset(offset);
 
   if (accountType && accountType in AccountType) {
+    let accountTypes = [accountType];
+
     if (accountType == AccountType.IRONMAN) {
-      hiscoresQuery = hiscoresQuery.andWhere((qb) => {
-        qb.where({ account_type: AccountType.IRONMAN })
-          .orWhere({ account_type: AccountType.HARDCORE_IRONMAN })
-          .orWhere({ account_type: AccountType.ULTIMATE_IRONMAN });
-      });
+      accountTypes = IRONMAN_TYPES;
     } else if (accountType == AccountType.GROUP_IRONMAN) {
-      hiscoresQuery = hiscoresQuery.andWhere((qb) => {
-        qb.where({ account_type: AccountType.GROUP_IRONMAN })
-          .orWhere({ account_type: AccountType.HARDCORE_GROUP_IRONMAN });
-      });
-    } else {
-      hiscoresQuery.andWhere({ account_type: accountType });
+      accountTypes = GROUP_IRONMAN_TYPES;
     }
+
+    hiscoresQuery = hiscoresQuery.whereIn('account_type', accountTypes);
   }
 
   const hiscores = await hiscoresQuery;

@@ -4,7 +4,7 @@ import { middleware } from '@middleware/common';
 import { DatabaseContext } from '@middleware/database';
 import { CollectionLog, CollectionLogUser } from '@models/index';
 import { response } from '@utils/handler-utils';
-import { AccountType } from '@datatypes/CollectionLogUserData';
+import { AccountType, GROUP_IRONMAN_TYPES, IRONMAN_TYPES } from '@datatypes/CollectionLogUserData';
 
 const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
   const { database: db } = context as DatabaseContext;
@@ -23,20 +23,15 @@ const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
     .andWhere('collection_log_user.deleted_at', null);
 
   if (accountType && accountType in AccountType) {
+    let accountTypes = [accountType];
+
     if (accountType == AccountType.IRONMAN) {
-      userRanksQuery = userRanksQuery.andWhere((qb) => {
-        qb.where({ account_type: AccountType.IRONMAN })
-          .orWhere({ account_type: AccountType.HARDCORE_IRONMAN })
-          .orWhere({ account_type: AccountType.ULTIMATE_IRONMAN });
-      });
+      accountTypes = IRONMAN_TYPES;
     } else if (accountType == AccountType.GROUP_IRONMAN) {
-      userRanksQuery = userRanksQuery.andWhere((qb) => {
-        qb.where({ account_type: AccountType.GROUP_IRONMAN })
-          .orWhere({ account_type: AccountType.HARDCORE_GROUP_IRONMAN });
-      });
-    } else {
-      userRanksQuery.andWhere({ account_type: accountType });
+      accountTypes = GROUP_IRONMAN_TYPES;
     }
+
+    userRanksQuery = userRanksQuery.whereIn('account_type', accountTypes);
   }
 
   const rank = await db.with('user_ranks', userRanksQuery)
