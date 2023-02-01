@@ -102,18 +102,38 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
           return;
         }
 
-        const existingItem = existingItems.find((existingItem) => {
+        /*
+         * Check if an exact match (item id and page id) for this item exists.
+         * Use it's db pk if so
+         */
+        let existingItem = existingItems.find((existingItem) => {
           return existingItem.itemId == itemId && existingItem.collectionLogEntryId == page?.id;
         });
 
-        const dbId = existingItem?.id ?? v4();
+        let dbId = v4();
+        if (existingItem) {
+          dbId = existingItem.id;
+        }
+
+        /*
+         * Exact match for this item doesn't exist. See if it exists in another page and copy it's details.
+         * Can happen when an existing item is added to a new page.
+         */
+        if (!existingItem) {
+          existingItem = existingItems.find((existingItem) => {
+            return existingItem.itemId == itemId;
+          });
+        }
+
+        const newItem = existingItem?.id != dbId;
         const newObtained = !existingItem?.obtained && obtained;
         const newUnObtained = existingItem?.obtained && !obtained;
         const newQuantity = existingItem?.quantity != quantity;
         const newName = existingItem?.name != name;
         const newSequence = existingItem?.sequence != i;
 
-        const shouldUpdate = newObtained
+        const shouldUpdate = newItem
+          || newObtained
           || newUnObtained
           || newQuantity
           || newName
