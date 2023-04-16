@@ -4,7 +4,11 @@ import { middleware } from '@middleware/common';
 import { DatabaseContext } from '@middleware/database';
 import { CollectionLog, CollectionLogUser } from '@models/index';
 import { response } from '@utils/handler-utils';
-import { AccountType, GROUP_IRONMAN_TYPES, IRONMAN_TYPES } from '@datatypes/CollectionLogUserData';
+import {
+  AccountType,
+  GROUP_IRONMAN_TYPES,
+  IRONMAN_TYPES,
+} from '@datatypes/CollectionLogUserData';
 
 const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
   const { database: db } = context as DatabaseContext;
@@ -21,7 +25,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .andWhere('collection_log.deleted_at', null)
     .andWhere('collection_log_user.deleted_at', null);
 
-  const accountTypeRanksQuery = db.select({ username: 'username', accountType: 'account_type' })
+  const accountTypeRanksQuery = db.select({ username: 'username', account_type: 'account_type' })
     .rank('rank', (qb) => {
       qb.orderBy('rank', 'ASC');
     })
@@ -48,13 +52,13 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .with('hc_gim_ranks', hcGimRanksQuery)
     .with('normal_ranks', normalRanksQuery)
     .select({
-      rank: 'all_ranks.rank',
-      ironmanRank: 'ironman_ranks.rank',
-      hardcoreIronmanRank: 'hc_ironman_ranks.rank',
-      ultimateIronmanRank: 'ult_ironman_ranks.rank',
-      groupIronmanRank: 'gim_ranks.rank',
-      hardcoreGroupIronmanRank: 'hc_gim_ranks.rank',
-      normalRank: 'normal_ranks.rank',
+      ALL: 'all_ranks.rank',
+      [AccountType.IRONMAN]: 'ironman_ranks.rank',
+      [AccountType.HARDCORE_IRONMAN]: 'hc_ironman_ranks.rank',
+      [AccountType.ULTIMATE_IRONMAN]: 'ult_ironman_ranks.rank',
+      [AccountType.GROUP_IRONMAN]: 'gim_ranks.rank',
+      [AccountType.HARDCORE_GROUP_IRONMAN]: 'hc_gim_ranks.rank',
+      [AccountType.NORMAL]: 'normal_ranks.rank',
     })
     .from('all_ranks')
     .leftJoin('ironman_ranks', 'ironman_ranks.username', 'all_ranks.username')
@@ -66,7 +70,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .whereRaw('LOWER(all_ranks.username) = ?', [paramsUsername.toLowerCase()])
     .first();
 
-  return response(200, { ...ranks });
+  return response(200, { accountTypeRanks: { ...ranks } });
 };
 
 export const handler = middleware(getAccountTypeRanksByUsername);
