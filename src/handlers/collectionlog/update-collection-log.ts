@@ -4,43 +4,57 @@ import { PartialModelObject } from 'objection';
 import CollectionLogDao from '@dao/CollectionLogDao';
 import { CollectionLogData } from '@datatypes/CollectionLogData';
 import { middleware } from '@middleware/common';
-import { CollectionLog } from '@models/index';
+import { CollectionLog, CollectionLogUser } from '@models/index';
 import { LambdaService } from '@services/lambda';
 import { errorResponse, successResponse } from '@utils/handler-utils';
 
 const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
   const accountHash = event.pathParameters?.accountHash as string;
   const body = JSON.parse(event.body as string);
-  const logData: CollectionLogData = body.collection_log;
+
+  let logData = body.collectionLog as CollectionLogData;
+  if (!logData) {
+    logData = body.data.collectionLog as CollectionLogData;
+  }
 
   if (!accountHash) {
     return errorResponse(400, 'Invalid request');
   }
 
-  const existingLog = await CollectionLogDao.getByAccountHash(accountHash);
+  let collectionLog = await new CollectionLogDao().getByAccountHash(accountHash);
 
-  if (!existingLog) {
-    return errorResponse(404, 'Unable to find collection log to update');
+  if (!collectionLog) {
+    const user = await CollectionLogUser.query().findOne({ account_hash: accountHash });
+    if (!user) {
+      return errorResponse(404, 'Unable to find existing user to update');
+    }
+
+    collectionLog = await CollectionLog.query().insert({
+      isUpdating: true,
+      userId: user.id,
+    });
+    collectionLog.user = user;
   }
 
-  const { username, isBanned } = existingLog.user;
+  const { username, isBanned } = collectionLog.user;
+  console.log(username);
 
   if (isBanned) {
     return errorResponse(403, 'User not permitted to upload collection log data');
   }
 
-  if (existingLog.isUpdating) {
+  if (collectionLog.isUpdating) {
     return successResponse(200, 'Collection log update in progress');
   }
 
   console.log(`STARTING COLLECTION LOG UPDATE FOR ${username}`);
 
-  const { unique_obtained: uniqueObtained, unique_items: uniqueItems } = logData;
+  const { uniqueObtained, uniqueItems } = logData;
   const logUpdateData: PartialModelObject<CollectionLog> = {
     uniqueObtained,
     uniqueItems,
   };
-  await existingLog.$query().update(logUpdateData);
+  await collectionLog.$query().update(logUpdateData);
 
   const lambdaService = LambdaService.getInstance();
   await lambdaService.invoke('update-collection-log-details', {
