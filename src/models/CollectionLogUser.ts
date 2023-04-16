@@ -9,6 +9,8 @@ export default class CollectionLogUser extends BaseModel {
   accountHash!: string;
   isBanned!: boolean;
   isFemale!: boolean;
+  showQuantity!: boolean;
+  displayRank!: string;
 
   collectionLog?: CollectionLog;
 
@@ -27,6 +29,8 @@ export default class CollectionLogUser extends BaseModel {
         accountHash: obj.account_hash,
         isBanned: obj.is_banned,
         isFemale: obj.is_female,
+        showQuantity: obj.show_quantity,
+        displayRank: obj.display_rank,
       };
     },
     format(obj) {
@@ -37,6 +41,8 @@ export default class CollectionLogUser extends BaseModel {
         account_hash: obj.accountHash,
         is_banned: obj.isBanned,
         is_female: obj.isFemale,
+        show_quantity: obj.showQuantity,
+        display_rank: obj.displayRank,
       };
     },
   };
