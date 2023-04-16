@@ -6,6 +6,7 @@ import { CollectionLog, CollectionLogPage } from '@models/index';
 export default class CollectionLogKillCount extends BaseModel {
   name!: string;
   amount!: number;
+  sequence!: number;
   collectionLogId!: string;
   collectionLogEntryId!: string;
 
@@ -20,6 +21,7 @@ export default class CollectionLogKillCount extends BaseModel {
         ...BaseModel.defaultParse(obj),
         name: obj.name,
         amount: obj.amount,
+        sequence: obj.sequence,
         collectionLogId: obj.collection_log_id,
         collectionLogEntryId: obj.collection_log_entry_id,
       };
@@ -29,6 +31,7 @@ export default class CollectionLogKillCount extends BaseModel {
         ...BaseModel.defaultFormat(obj),
         name: obj.name,
         amount: obj.amount,
+        sequence: obj.sequence,
         collection_log_id: obj.collectionLogId,
         collection_log_entry_id: obj.collectionLogEntryId,
       };
