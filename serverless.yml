@@ -80,6 +80,13 @@ functions:
     handler: src/handlers/collectionlog/update-collection-log-details.handler
     timeout: 120
 
+  delete-collection-log:
+    handler: src/handlers/collectionlog/delete-collection-log.handler
+    events:
+      - httpApi:
+          path: /collectionlog/delete
+          method: delete
+
   # User endpoints
   create-user:
     handler: src/handlers/user/create-user.handler
