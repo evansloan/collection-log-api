@@ -7,6 +7,7 @@ export const up = async (knex: Knex): Promise<void> => {
     .createTable(COLLECTION_LOG_TAB_TABLE, (tb) => {
       tb.uuid('id', { primaryKey: true }).defaultTo(knex.raw('uuid_generate_v4()'));
       tb.string('name').notNullable();
+      tb.timestamp('created_at');
       tb.timestamp('updated_at');
       tb.timestamp('deleted_at');
     });

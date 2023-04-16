@@ -18,7 +18,7 @@ export const up = async (knex: Knex): Promise<void> => {
       tb.integer('quantity').defaultTo(0);
       tb.boolean('obtained').defaultTo(false);
       tb.integer('sequence').notNullable();
-      tb.timestamp('obtained_id');
+      tb.timestamp('obtained_at');
       tb.timestamp('created_at');
       tb.timestamp('updated_at');
       tb.timestamp('deleted_at');
