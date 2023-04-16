@@ -2,29 +2,40 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
 import { middleware } from '@middleware/common';
 import { CollectionLogUser } from '@models/index';
-import { headers, response } from '@utils/handler-utils';
+import { errorResponse, response } from '@utils/handler-utils';
 
 const create: APIGatewayProxyHandlerV2 = async (event) => {
   const body = JSON.parse(event.body as string);
 
-  if (!body.account_hash) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: 'Invalid post body' }),
-    };
+  if (!body.accountHash) {
+    return errorResponse(400, 'Invalid post body');
   }
 
   console.log(`STARTING USER CREATE FOR ${body.username}`);
 
-  const { username, account_type: accountType, account_hash: accountHash, is_female: isFemale } = body;
-  const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
+  const {
+    username,
+    accountType,
+    accountHash,
+    isFemale,
+    userSettings,
+  } = body;
 
+  let displayRank = 'ALL';
+  let showQuantity = true;
+  if (userSettings) {
+    displayRank = userSettings.displayRank;
+    showQuantity = userSettings.showQuantity;
+  }
+
+  const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
   if (existingUser) {
     await existingUser.$query().update({
       username,
       accountType,
       isFemale,
+      displayRank,
+      showQuantity,
     });
 
     return response(200, existingUser);
@@ -37,6 +48,8 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     accountType,
     accountHash,
     isFemale,
+    displayRank,
+    showQuantity,
   });
 
   return response(201, user);
