@@ -5,6 +5,7 @@ import { Model, Page, PartialModelObject, QueryBuilder } from 'objection';
 
 interface Options {
   columnName: string;
+  propName: string;
   deletedValue: Date;
 }
 
@@ -36,7 +37,7 @@ export class CustomQueryBuilder<M extends Model, R = M[]> extends QueryBuilder<M
     });
 
     const patch: PartialModelObject<M> = {};
-    patch[options.columnName] = options.deletedValue;
+    patch[options.propName] = options.deletedValue;
 
     return this.patch(patch);
   }
@@ -69,6 +70,7 @@ type Constructor<T> = new (...args: any[]) => T;
 export const CustomQueryBuilderMixin = (passedOptions?: Options) => {
   options = {
     columnName: 'deleted_at',
+    propName: 'deletedAt',
     deletedValue: new Date(),
     ...passedOptions,
   };
