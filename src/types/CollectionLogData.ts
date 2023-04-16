@@ -5,10 +5,15 @@ interface CollectionLogItemData {
   obtained: boolean;
 }
 
+interface CollectionLogKillCount {
+  amount: number;
+  name: string;
+}
+
 interface CollectionLogEntryData {
   [entryName: string]: {
     items: CollectionLogItemData[];
-    kill_count: string[] | undefined;
+    killCounts: string[] | CollectionLogKillCount[];
   };
 }
 
@@ -17,10 +22,10 @@ interface CollectionLogTabData {
 }
 
 interface CollectionLogData {
-  unique_obtained: number;
-  unique_items: number;
-  total_obtained: number;
-  total_items: number;
+  uniqueObtained: number;
+  uniqueItems: number;
+  totalObtained: number;
+  totalItems: number;
   tabs: CollectionLogTabData;
 }
 
