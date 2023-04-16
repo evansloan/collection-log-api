@@ -4,21 +4,15 @@ import { raw } from 'objection';
 import CollectionLogDao from '@dao/CollectionLogDao';
 import { middleware } from '@middleware/common';
 import { CollectionLogItem, CollectionLogKillCount, CollectionLogPage } from '@models/index';
-import { headers } from '@utils/handler-utils';
+import { errorResponse, response } from '@utils/handler-utils';
 
 const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   const paramsUsername = event.pathParameters?.username as string;
 
-  const collectionLog = await CollectionLogDao.getByUsername(paramsUsername);
+  const collectionLog = await new CollectionLogDao().getByUsername(paramsUsername);
 
   if (!collectionLog) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({
-        error: `Collection log not found for user ${paramsUsername}`,
-      }),
-    };
+    return errorResponse(404, `Collection log not found for user ${paramsUsername}`);
   }
 
   const pageName = event.queryStringParameters?.pageName as string;
@@ -29,13 +23,7 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
     .findOne(raw('LOWER(??)', 'name'), '=', pageName.toLowerCase());
 
   if (!page) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({
-        error: `Collection log page not found with name ${pageName}`,
-      }),
-    };
+    return errorResponse(404, `Collection log page not found with name ${pageName}`);
   }
 
   const itemSelect = {
@@ -74,11 +62,7 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
     killCount,
   };
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(res),
-  };
+  return response(200, res);
 };
 
 export const handler = middleware(getPageByUsername);
