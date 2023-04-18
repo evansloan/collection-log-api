@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config({ path: './.env.local' });
+require('dotenv').config();
 
 const config: { [key: string]: Knex.Config } = {
   development: {
