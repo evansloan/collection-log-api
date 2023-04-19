@@ -28,7 +28,13 @@ $ docker-compose up
 $ docker-compose exec api yarn run migrate:latest
 ```
 
-4. Connect to the database and API
+4. Run database seeders (optional)
+
+```
+$ docker-compose exec api yarn run seed
+```
+
+5. Connect to the database and API
 
 Database connection string: `postgres://DB_USER:DB_PASS@localhost:DB_MAPPED_PORT/collection_log`
 

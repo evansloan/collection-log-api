@@ -7,10 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint {migrations,src}/**/*.{js,ts,tsx}",
     "lint:fix": "eslint --fix {migrations,src}/**/*.{js,ts,tsx}",
-    "migrate:latest": "knex migrate:latest"
+    "migrate:latest": "knex migrate:latest",
+    "seed": "knex seed:run"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.81",
     "@types/node": "^16.4.3",
