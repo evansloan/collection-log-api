@@ -47,13 +47,6 @@ provider:
 
 functions:
   # Collection log endpoints
-  create-collection-log:
-    handler: src/handlers/collectionlog/create-collection-log.handler
-    events:
-      - httpApi:
-          path: /collectionlog
-          method: post
-
   get-collection-log-by-username:
     handler: src/handlers/collectionlog/get-collection-log-by-username.handler
     events:
@@ -107,6 +100,13 @@ functions:
     events:
       - httpApi:
           path: /user/count
+          method: get
+
+  get-user-settings:
+    handler: src/handlers/user/get-user-settings.handler
+    events:
+      - httpApi:
+          path: /user/settings/{username}
           method: get
 
   # Items endpoints
