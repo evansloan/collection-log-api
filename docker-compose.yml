@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  api:
+    container_name: api
+    restart: always
+    build:
+      context: .
+      network: 'host'
+    ports:
+      - '${API_PORT:-3001}:${API_PORT:-3001}'
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/app
+
+  db:
+    container_name: postgres
+    image: postgres
+    ports:
+      - '${DB_MAPPED_PORT:-5433}:${DB_PORT:-5432}'
+    volumes:
+      - pg:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+
+volumes:
+  pg:
