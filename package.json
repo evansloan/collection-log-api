@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "serverless offline start --noTimeout --stage=local --host=localhost --httpPort=3001 --useChildProcesses",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint {migrations,src}/**/*.{js,ts,tsx}",
     "lint:fix": "eslint --fix {migrations,src}/**/*.{js,ts,tsx}",

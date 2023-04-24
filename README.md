@@ -8,13 +8,14 @@ Clone the respository
 
 ```
 $ git clone https://github.com/evansloan/collection-log-api && cd collection-log-api
+$ yarn install
 ```
 
 ### Docker setup
 
 1. Create .env file
 
-Rename `.env.sample` to `.env`. The variables in this file can be modified to your liking
+Rename `.env.docker` to `.env`. The variables in this file can be modified to your liking
 
 2. Build and start the Docker container
 
@@ -36,9 +37,9 @@ $ docker-compose exec api yarn run seed
 
 5. Connect to the database and API
 
-Database connection string: `postgres://DB_USER:DB_PASS@localhost:DB_MAPPED_PORT/collection_log`
+Database connection string: `postgres://postgres:postgres@localhost:5433/collection_log`
 
-API base URL: `http://localhost:API_PORT/`
+API base URL: `http://localhost:3001/`
 
 ### Manual setup
 
@@ -59,9 +60,33 @@ $ GRANT ALL PRIVILEGES ON DATABASE collection_log TO <username>
 Rename `.env.sample` to `.env` and set the following variables
 
 ```
-DB_HOST=localhost
-DB_USER=<username used in step 2>
-DB_PASS=<password set in step 2>
+DB_USER=<username>
+DB_PASS=<password>
 ```
+
+4. Apply database migrations
+
+```
+$ yarn run migrate:latest
+```
+
+5. Run database seeders (optional)
+
+```
+$ yarn run seed
+```
+
+6. Run the API
+
+```
+yarn run dev
+```
+
+7. Connect to the database and API
+
+Database connection string: `postgres://postgres:postgres@localhost:5433/collection_log`
+
+
+API base URL: `http://localhost:3001/`
 
 [Documentation](https://docs.collectionlog.net)
