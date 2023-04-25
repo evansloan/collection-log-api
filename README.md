@@ -4,7 +4,7 @@ Serverless API for [collectionlog.net](https://github.com/evansloan/collectionlo
 
 ## Getting started
 
-Clone the respository
+Clone the respository and install dependiencies
 
 ```
 $ git clone https://github.com/evansloan/collection-log-api && cd collection-log-api
