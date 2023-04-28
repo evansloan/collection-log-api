@@ -18,12 +18,10 @@ export const GROUP_IRONMAN_TYPES = [
   AccountType.HARDCORE_GROUP_IRONMAN,
 ];
 
-interface CollectionLogUserData {
+export interface CollectionLogUserData {
   accountHash?: string;
   accountType: AccountType;
   isFemale: boolean;
   runeliteId?: string;
   username: string;
 }
-
-export { CollectionLogUserData };

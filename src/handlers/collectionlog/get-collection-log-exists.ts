@@ -7,7 +7,7 @@ import { response } from '@utils/handler-utils';
 const getCollectionLogExists: APIGatewayProxyHandlerV2 = async (event) => {
   const accountHash = event.pathParameters?.accountHash as string;
 
-  const collectionLog = await CollectionLogDao.getByAccountHash(accountHash);
+  const collectionLog = await (new CollectionLogDao()).getByAccountHash(accountHash);
   const exists = collectionLog ? true : false;
 
   return response(200, { exists });

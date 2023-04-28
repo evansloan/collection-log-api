@@ -1,28 +1,38 @@
 import { raw } from 'objection';
 
 import { CollectionLog, CollectionLogUser } from '@models/index';
+import { CustomQueryBuilder } from '@lib/custom-query-builder';
 
 export default class CollectionLogDao {
-  static async getByUsername(username: string) {
-    const collectionLog = await CollectionLog.query()
+  private collectionLog?: CollectionLog;
+  private query: CustomQueryBuilder<CollectionLog> = CollectionLog.query();
+
+  constructor(collectionLog?: CollectionLog) {
+    if (collectionLog) {
+      this.collectionLog = collectionLog;
+    }
+  }
+
+  async getByUsername(username: string) {
+    this.collectionLog = await this.query
       .withGraphJoined('user')
       .findOne(raw('LOWER(??)', 'user.username'), '=', username.toLowerCase())
       .orderBy('updated_at', 'DESC');
 
-    return collectionLog;
+    return this.collectionLog;
   }
 
-  static async getByAccountHash(accountHash: string) {
-    const collectionLog = await CollectionLog.query()
+  async getByAccountHash(accountHash: string) {
+    this.collectionLog = await this.query
       .withGraphJoined('user')
       .findOne({ account_hash: accountHash })
       .orderBy('updated_at', 'DESC');
 
-    return collectionLog;
+    return this.collectionLog;
   }
 
-  static async getItems(collectionLog: CollectionLog) {
-    const items = await collectionLog.$relatedQuery('items')
+  async getItems() {
+    const items = await this.collectionLog?.$relatedQuery('items')
       .withGraphJoined('page.[tab]')
       .orderBy('page:tab.name', 'ASC')
       .orderBy('page.name', 'ASC')
@@ -31,8 +41,8 @@ export default class CollectionLogDao {
     return items;
   }
 
-  static async getObtainedItems(collectionLog: CollectionLog) {
-    const items = await collectionLog.$relatedQuery('items')
+  async getObtainedItems() {
+    const items = await this.collectionLog?.$relatedQuery('items')
       .select({
         id: 'item_id',
         obtained: raw('BOOL_OR(obtained)'),
@@ -48,24 +58,29 @@ export default class CollectionLogDao {
     return items;
   }
 
-  static async getKillCounts(collectionLog: CollectionLog) {
-    const killCounts = await collectionLog.$relatedQuery('killCounts')
+  async getKillCounts() {
+    const killCounts = await this.collectionLog?.$relatedQuery('killCounts')
       .withGraphJoined('page.[tab]')
       .orderBy('page:tab.name', 'ASC')
-      .orderBy('page.name', 'ASC');
+      .orderBy('page.name', 'ASC')
+      .orderBy('sequence', 'ASC');
 
     return killCounts;
   }
 
-  static async getFormattedCollectionLog(collectionLog: CollectionLog, user?: CollectionLogUser) {
-    const { id, userId, totalObtained, totalItems, uniqueObtained, uniqueItems } = collectionLog;
+  async getFormattedCollectionLog(user?: CollectionLogUser) {
+    if (!this.collectionLog) {
+      return undefined;
+    }
+
+    const { id, userId, totalObtained, totalItems, uniqueObtained, uniqueItems } = this.collectionLog;
     if (!user) {
-      user = collectionLog.user;
+      user = this.collectionLog?.user;
     }
 
     const { username, accountType } = user;
-    const items = await CollectionLogDao.getItems(collectionLog);
-    const killCounts = await CollectionLogDao.getKillCounts(collectionLog);
+    const items = await this.getItems();
+    const killCounts = await this.getKillCounts();
 
     const res: any = {
       collectionLogId: id,
@@ -81,7 +96,7 @@ export default class CollectionLogDao {
       },
     };
 
-    items.forEach((item) => {
+    items?.forEach((item) => {
       const {
         itemId,
         quantity,
@@ -116,9 +131,10 @@ export default class CollectionLogDao {
       });
     });
 
-    killCounts.forEach((kc) => {
+    killCounts?.forEach((kc) => {
       const {
         amount,
+        sequence,
         name: kcName,
         page: {
           name: pageName,
@@ -132,9 +148,10 @@ export default class CollectionLogDao {
       if (!page.killCount) {
         page.killCount = [];
       }
-      page.killCount?.push({
+      page.killCount.push({
         name: kcName,
         amount,
+        sequence,
       });
     });
 

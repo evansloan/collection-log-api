@@ -6,13 +6,15 @@ import { errorResponse, response } from '@utils/handler-utils';
 
 const getByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   const paramsUsername = event.pathParameters?.username as string;
-  const collectionLog = await CollectionLogDao.getByUsername(paramsUsername);
+
+  const clDao = new CollectionLogDao();
+  const collectionLog = await clDao.getByUsername(paramsUsername);
 
   if (!collectionLog) {
     return errorResponse(404, `Unable to find collection log for user ${paramsUsername}`);
   }
 
-  const res = await CollectionLogDao.getFormattedCollectionLog(collectionLog);
+  const res = await clDao.getFormattedCollectionLog();
   return response(200, res);
 };
 

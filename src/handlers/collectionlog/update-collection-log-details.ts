@@ -47,7 +47,9 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
   console.log(`STARTING COLLECTION LOG DETAIL UPDATE FOR ${username}`);
 
-  const existingLog = await CollectionLogDao.getByAccountHash(accountHash);
+  const clDao = new CollectionLogDao();
+
+  const existingLog = await clDao.getByAccountHash(accountHash);
   if (!existingLog) {
     return errorResponse(404, 'Unable to find collection log to update');
   }
@@ -56,8 +58,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
   const collectionLogTabs = await CollectionLogTab.query();
   const collectionLogPages = await CollectionLogPage.query();
-  const existingItems = await CollectionLogDao.getItems(existingLog);
-  const existingKcs = await CollectionLogDao.getKillCounts(existingLog);
+  const existingItems = await clDao.getItems();
+  const existingKcs = await clDao.getKillCounts();
   const itemsToUpdate: PartialModelObject<CollectionLogItem>[] = [];
   const kcsToUpdate: PartialModelObject<CollectionLogKillCount>[] = [];
 
@@ -90,7 +92,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
       const pageData = logData.tabs[tabName][pageName];
       const itemData = pageData.items;
-      const killCountData = pageData.kill_count;
+      const killCountData = pageData.killCounts;
       itemData.forEach((item, i) => {
         const { id: itemId, name, quantity, obtained } = item;
 
@@ -106,7 +108,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
          * Check if an exact match (item id and page id) for this item exists.
          * Use it's db pk if so
          */
-        let existingItem = existingItems.find((existingItem) => {
+        let existingItem = existingItems?.find((existingItem) => {
           return existingItem.itemId == itemId && existingItem.collectionLogEntryId == page?.id;
         });
 
@@ -120,7 +122,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
          * Can happen when an existing item is added to a new page.
          */
         if (!existingItem) {
-          existingItem = existingItems.find((existingItem) => {
+          existingItem = existingItems?.find((existingItem) => {
             return existingItem.itemId == itemId;
           });
         }
@@ -162,10 +164,18 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
         }
       });
 
-      killCountData?.forEach((killCount) => {
-        const killCountSplit = killCount.split(': ');
-        const name = killCountSplit[0];
-        const amount = Number(killCountSplit[1]);
+      killCountData?.forEach((killCount, i) => {
+        let name = '';
+        let amount = 0;
+
+        if (typeof killCount == 'string') {
+          const killCountSplit = (killCount as string).split(': ');
+          name = killCountSplit[0];
+          amount = Number(killCountSplit[1]);
+        } else {
+          name = killCount.name;
+          amount = killCount.amount;
+        }
 
         const isUpdated = kcsToUpdate.find((updatedKillCount) => {
           return updatedKillCount.name == name && updatedKillCount.collectionLogEntryId == page?.id;
@@ -175,7 +185,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
           return;
         }
 
-        const existingKillCount = existingKcs.find((existingKillCount) => {
+        const existingKillCount = existingKcs?.find((existingKillCount) => {
           return existingKillCount.name == name && existingKillCount.collectionLogEntryId == page?.id;
         });
 
@@ -189,6 +199,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             collectionLogEntryId: page?.id,
             name,
             amount,
+            sequence: i,
           });
         }
       });

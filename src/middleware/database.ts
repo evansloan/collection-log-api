@@ -8,7 +8,7 @@ export interface DatabaseContext extends Context {
   database: Knex<any, unknown[]>;
 }
 
-export class DatabaseMiddleware implements middy.MiddlewareObj<APIGatewayProxyEventV2, APIGatewayProxyResultV2> {
+class DatabaseMiddleware implements middy.MiddlewareObj<APIGatewayProxyEventV2, APIGatewayProxyResultV2> {
   private static instance: DatabaseMiddleware;
 
   private readonly service: DatabaseService;

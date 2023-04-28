@@ -2,10 +2,12 @@ import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyResult
 import middy from '@middy/core';
 import doNotWaitForEmptyEventLoop from '@middy/do-not-wait-for-empty-event-loop';
 
-import { DatabaseMiddleware } from './database';
+import databaseMiddleWare from './database';
+import snakeCaseParse from './snake-case-parse';
 
 export const middleware = (handler: APIGatewayProxyHandlerV2): Handler<APIGatewayProxyEventV2, APIGatewayProxyResultV2> => {
   return middy(handler)
     .use(doNotWaitForEmptyEventLoop({ runOnError: true, runOnBefore: true, runOnAfter: true }))
-    .use(DatabaseMiddleware.getInstance());
+    .use(databaseMiddleWare())
+    .use(snakeCaseParse());
 };
