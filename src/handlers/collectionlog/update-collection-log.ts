@@ -29,6 +29,7 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
       return errorResponse(404, 'Unable to find existing user to update');
     }
 
+    console.log(`STARTING COLLECTION LOG CREATE FOR ${user.username}`);
     collectionLog = await CollectionLog.query().insert({
       isUpdating: true,
       userId: user.id,
@@ -37,7 +38,6 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
   }
 
   const { username, isBanned } = collectionLog.user;
-  console.log(username);
 
   if (isBanned) {
     return errorResponse(403, 'User not permitted to upload collection log data');

@@ -3,17 +3,19 @@ interface CollectionLogItemData {
   name: string;
   quantity: number;
   obtained: boolean;
+  sequence: number;
 }
 
 interface CollectionLogKillCount {
   amount: number;
   name: string;
+  sequence: number;
 }
 
 interface CollectionLogEntryData {
   [entryName: string]: {
     items: CollectionLogItemData[];
-    killCounts: string[] | CollectionLogKillCount[];
+    killCounts: CollectionLogKillCount[];
   };
 }
 

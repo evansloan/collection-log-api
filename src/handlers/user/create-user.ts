@@ -30,6 +30,7 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
 
   const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
   if (existingUser) {
+    console.log(`EXISTING USER FOR ${body.username} FOUND. STARTING USER UPDATE`);
     await existingUser.$query().update({
       username,
       accountType,
