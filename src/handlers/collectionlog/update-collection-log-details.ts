@@ -93,8 +93,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
       const pageData = logData.tabs[tabName][pageName];
       const itemData = pageData.items;
       const killCountData = pageData.killCounts;
-      itemData.forEach((item, i) => {
-        const { id: itemId, name, quantity, obtained } = item;
+      itemData.forEach((item) => {
+        const { id: itemId, name, quantity, obtained, sequence } = item;
 
         const isUpdated = itemsToUpdate.find((updatedItem) => {
           return updatedItem.itemId == itemId && updatedItem.collectionLogEntryId == page?.id;
@@ -129,14 +129,12 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
         const newItem = existingItem?.id != dbId;
         const newObtained = !existingItem?.obtained && obtained;
-        const newUnObtained = existingItem?.obtained && !obtained;
         const newQuantity = existingItem?.quantity != quantity;
         const newName = existingItem?.name != name;
-        const newSequence = existingItem?.sequence != i;
+        const newSequence = existingItem?.sequence != sequence;
 
         const shouldUpdate = newItem
           || newObtained
-          || newUnObtained
           || newQuantity
           || newName
           || newSequence;
@@ -144,9 +142,6 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
         let obtainedAt = existingItem?.obtainedAt;
         if (newObtained) {
           obtainedAt = new Date();
-        }
-        if (newUnObtained) {
-          obtainedAt = undefined;
         }
 
         if (shouldUpdate) {
@@ -157,25 +152,15 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             itemId,
             name,
             quantity,
-            sequence: i,
+            sequence,
             obtained,
             obtainedAt,
           });
         }
       });
 
-      killCountData?.forEach((killCount, i) => {
-        let name = '';
-        let amount = 0;
-
-        if (typeof killCount == 'string') {
-          const killCountSplit = (killCount as string).split(': ');
-          name = killCountSplit[0];
-          amount = Number(killCountSplit[1]);
-        } else {
-          name = killCount.name;
-          amount = killCount.amount;
-        }
+      killCountData?.forEach((killCount) => {
+        const { amount, name, sequence } = killCount;
 
         const isUpdated = kcsToUpdate.find((updatedKillCount) => {
           return updatedKillCount.name == name && updatedKillCount.collectionLogEntryId == page?.id;
@@ -190,7 +175,10 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
         });
 
         const dbId = existingKillCount?.id ?? v4();
-        const shouldUpdate = existingKillCount?.amount != amount;
+        const newAmount = existingKillCount?.amount != amount;
+        const newSequence = existingKillCount?.sequence != killCount.sequence;
+
+        const shouldUpdate = newAmount || newSequence;
 
         if (shouldUpdate) {
           kcsToUpdate.push({
@@ -199,7 +187,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             collectionLogEntryId: page?.id,
             name,
             amount,
-            sequence: i,
+            sequence: sequence,
           });
         }
       });
