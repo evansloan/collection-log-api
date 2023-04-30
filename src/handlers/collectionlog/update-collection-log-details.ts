@@ -187,7 +187,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             collectionLogEntryId: page?.id,
             name,
             amount,
-            sequence: sequence,
+            sequence,
           });
         }
       });
