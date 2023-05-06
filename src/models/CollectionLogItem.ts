@@ -1,4 +1,4 @@
-import { ColumnNameMappers, Model } from 'objection';
+import { AnyQueryBuilder, ColumnNameMappers, Model, Modifiers } from 'objection';
 
 import { BaseModel } from './BaseModel';
 import { CollectionLog, CollectionLogPage } from '@models/index';
@@ -17,6 +17,22 @@ export default class CollectionLogItem extends BaseModel {
   collectionLog!: CollectionLog;
 
   static tableName = 'collection_log_item';
+
+  private static readonly FEMALE_ITEMS: number[] = [
+    // Farming outfit
+    13647,
+    13643,
+    13641,
+    13645,
+  ];
+
+  private static readonly MALE_ITEMS: number[] = [
+    // Farming outfit
+    13646,
+    13642,
+    13640,
+    13644,
+  ];
 
   static columnNameMappers: ColumnNameMappers = {
     parse(obj) {
@@ -65,4 +81,9 @@ export default class CollectionLogItem extends BaseModel {
       },
     },
   });
+
+  static modifiers: Modifiers<AnyQueryBuilder> = {
+    femaleItems: (query) => query.whereNotIn('item_id', CollectionLogItem.MALE_ITEMS),
+    maleItems: (query) => query.whereNotIn('item_id', CollectionLogItem.FEMALE_ITEMS),
+  };
 }
