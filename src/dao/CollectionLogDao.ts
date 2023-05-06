@@ -42,7 +42,6 @@ export default class CollectionLogDao {
 
   getItemsWithRelated = async (filterGender: boolean) => {
     const query = this.collectionLog?.$relatedQuery('items')
-      .modify(this.genderModifier)
       .withGraphJoined('page.[tab]')
       .orderBy('page:tab.name', 'ASC')
       .orderBy('page.name', 'ASC')
