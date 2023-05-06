@@ -93,8 +93,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
       const pageData = logData.tabs[tabName][pageName];
       const itemData = pageData.items;
       const killCountData = pageData.killCounts;
-      itemData.forEach((item) => {
-        const { id: itemId, name, quantity, obtained, sequence } = item;
+      itemData.forEach((item, i) => {
+        const { id: itemId, name, quantity, obtained } = item;
 
         const isUpdated = itemsToUpdate.find((updatedItem) => {
           return updatedItem.itemId == itemId && updatedItem.collectionLogEntryId == page?.id;
@@ -131,7 +131,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
         const newObtained = !existingItem?.obtained && obtained;
         const newQuantity = existingItem?.quantity != quantity;
         const newName = existingItem?.name != name;
-        const newSequence = existingItem?.sequence != sequence;
+        const newSequence = existingItem?.sequence != i;
 
         const shouldUpdate = newItem
           || newObtained
@@ -140,7 +140,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
           || newSequence;
 
         let obtainedAt = existingItem?.obtainedAt;
-        if (newObtained) {
+        if (newObtained && !obtainedAt) {
           obtainedAt = new Date();
         }
 
@@ -152,15 +152,15 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             itemId,
             name,
             quantity,
-            sequence,
+            sequence: i,
             obtained,
             obtainedAt,
           });
         }
       });
 
-      killCountData?.forEach((killCount) => {
-        const { amount, name, sequence } = killCount;
+      killCountData?.forEach((killCount, i) => {
+        const { amount, name } = killCount;
 
         const isUpdated = kcsToUpdate.find((updatedKillCount) => {
           return updatedKillCount.name == name && updatedKillCount.collectionLogEntryId == page?.id;
@@ -176,7 +176,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
         const dbId = existingKillCount?.id ?? v4();
         const newAmount = existingKillCount?.amount != amount;
-        const newSequence = existingKillCount?.sequence != killCount.sequence;
+        const newSequence = existingKillCount?.sequence != i;
 
         const shouldUpdate = newAmount || newSequence;
 
@@ -187,7 +187,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
             collectionLogEntryId: page?.id,
             name,
             amount,
-            sequence,
+            sequence: i,
           });
         }
       });
@@ -216,6 +216,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
       .onConflict('id')
       .merge([
         'amount',
+        'sequence',
         'updated_at',
       ]);
   }

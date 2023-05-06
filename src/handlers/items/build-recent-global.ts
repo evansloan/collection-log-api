@@ -33,6 +33,7 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
     // eslint-disable-next-line quotes
     .andWhereRaw("obtained_at >= NOW() - INTERVAL '12 HOURS'");
 
+  console.log('FETCHING RECENT GLOBAL OBTAINED ITEMS');
   const items = await db.with('items', allItemsQuery)
     .select({ ...select, username: 'username' })
     .from('items')
@@ -44,9 +45,11 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
     .orderBy('items.obtained_at', 'DESC')
     .limit(30);
 
+  console.log('INSERTING RECENT GLOBAL ITEMS');
   await db.insert(items).into('recent_obtained_items');
 
   if (previousRecords.length > 0) {
+    console.log('DELETING PREVIOUS RECENT GLOBAL OBTAINED ITEMS');
     await db.delete().from('recent_obtained_items').whereIn('id', previousRecords.map((record) => record.id));
   }
 };

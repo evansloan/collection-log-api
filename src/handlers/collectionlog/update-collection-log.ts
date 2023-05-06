@@ -31,7 +31,6 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
 
     console.log(`STARTING COLLECTION LOG CREATE FOR ${user.username}`);
     collectionLog = await CollectionLog.query().insert({
-      isUpdating: true,
       userId: user.id,
     });
     collectionLog.user = user;
