@@ -58,8 +58,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
   const collectionLogTabs = await CollectionLogTab.query();
   const collectionLogPages = await CollectionLogPage.query();
-  const existingItems = await clDao.getItems();
-  const existingKcs = await clDao.getKillCounts();
+  const existingItems = await clDao.getItemsWithRelated(false);
+  const existingKcs = await clDao.getKillCountsWithRelated();
   const itemsToUpdate: PartialModelObject<CollectionLogItem>[] = [];
   const kcsToUpdate: PartialModelObject<CollectionLogKillCount>[] = [];
 
