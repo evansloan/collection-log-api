@@ -3,13 +3,14 @@ import { raw } from 'objection';
 
 import CollectionLogDao from '@dao/CollectionLogDao';
 import { middleware } from '@middleware/common';
-import { CollectionLogItem, CollectionLogKillCount, CollectionLogPage } from '@models/index';
+import { CollectionLogPage } from '@models/index';
 import { errorResponse, response } from '@utils/handler-utils';
 
 const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   const paramsUsername = event.pathParameters?.username as string;
 
-  const collectionLog = await new CollectionLogDao().getByUsername(paramsUsername);
+  const clDao = new CollectionLogDao();
+  const collectionLog = await clDao.getByUsername(paramsUsername);
 
   if (!collectionLog) {
     return errorResponse(404, `Collection log not found for user ${paramsUsername}`);
@@ -28,30 +29,22 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
 
   const itemSelect = {
     id: 'item_id',
-    name: 'name',
+    name: 'collection_log_item.name',
     quantity: 'quantity',
     obtained: 'obtained',
     obtainedAt: 'obtained_at',
     sequence: 'sequence',
   };
-  const items = await CollectionLogItem.query()
-    .select(itemSelect)
-    .where({ collection_log_entry_id: page.id })
-    .andWhere({ collection_log_id: collectionLog.id })
-    .orderBy('sequence')
-    .limit(limit)
-    .offset(offset);
+  const items = await clDao.getItems(itemSelect, pageName, limit, offset);
+  if (!items) {
+    return errorResponse(404, `Unable to find items for user: ${paramsUsername} page: ${pageName}`);
+  }
 
   const kcSelect = {
     name: 'name',
     amount: 'amount',
   };
-  const killCount = await CollectionLogKillCount.query()
-    .select(kcSelect)
-    .where({ collection_log_entry_id: page.id })
-    .andWhere({ collection_log_id: collectionLog.id })
-    .limit(limit)
-    .offset(offset);
+  const killCount = await clDao.getKillCounts(kcSelect, pageName, limit, offset);
 
   const res = {
     username: collectionLog.user.username,
