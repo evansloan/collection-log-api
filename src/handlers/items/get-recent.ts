@@ -15,7 +15,8 @@ const recentItems: APIGatewayProxyHandlerV2 = async (event) => {
   }
 
   const { user: { username, accountType } } = collectionLog;
-  const items = await clDao.getObtainedItems();
+  const limit = 5;
+  const items = await clDao.getObtainedItems(limit);
 
   const res = {
     username,
