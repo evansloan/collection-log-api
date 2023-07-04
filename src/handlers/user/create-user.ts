@@ -30,7 +30,7 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
 
   const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
   if (existingUser) {
-    console.log(`EXISTING USER FOR ${body.username} FOUND. STARTING USER UPDATE`);
+    console.log(`EXISTING USER FOR ${username} FOUND. STARTING USER UPDATE`);
     await existingUser.$query().update({
       username,
       accountType,
@@ -42,7 +42,13 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     return response(200, existingUser);
   }
 
-  console.log(`EXISTING USER FOR ${body.username} NOT FOUND. STARTING USER CREATE`);
+  const userExistsWithName = await CollectionLogUser.query().findOne({ username }) != undefined;
+  if (userExistsWithName) {
+    console.log(`EXISTING USER FOR ${username} FOUND. ACCOUNT HASH MISMATCH`);
+    return errorResponse(401, `Invalid account hash for user ${username}`);
+  }
+
+  console.log(`EXISTING USER FOR ${username} NOT FOUND. STARTING USER CREATE`);
 
   const user = await CollectionLogUser.query().insert({
     username,
