@@ -111,7 +111,7 @@ export default class CollectionLogDao {
   };
 
   getKillCounts = async (select?: any, pageName?: string, limit?: number, offset?: number) => {
-    const query = this.collectionLog?.$relatedQuery('killCount')
+    const query = this.collectionLog?.$relatedQuery('killCounts')
       .joinRelated('page')
       .orderBy('sequence', 'ASC');
 

@@ -41,7 +41,7 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   }
 
   const kcSelect = {
-    name: 'name',
+    name: 'collection_log_kill_count.name',
     amount: 'amount',
   };
   const killCount = await clDao.getKillCounts(kcSelect, pageName, limit, offset);
