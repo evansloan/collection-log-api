@@ -48,6 +48,8 @@ export const seed = async (knex: Knex): Promise<void> => {
       account_type: getAccountType(),
       created_at: date,
       updated_at: date,
+      youtube_url: 'https://youtube.com',
+      twitch_url: 'https://twitch.tv',
     };
     users.push(user);
   }

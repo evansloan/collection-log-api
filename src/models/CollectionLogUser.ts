@@ -11,6 +11,8 @@ export default class CollectionLogUser extends BaseModel {
   isFemale!: boolean;
   showQuantity!: boolean;
   displayRank!: string;
+  youtubeUrl?: string;
+  twitchUrl?: string;
 
   collectionLog?: CollectionLog;
 
@@ -31,6 +33,7 @@ export default class CollectionLogUser extends BaseModel {
         isFemale: obj.is_female,
         showQuantity: obj.show_quantity,
         displayRank: obj.display_rank,
+        youtubeURL: obj.youtube_url,
       };
     },
     format(obj) {
@@ -43,6 +46,8 @@ export default class CollectionLogUser extends BaseModel {
         is_female: obj.isFemale,
         show_quantity: obj.showQuantity,
         display_rank: obj.displayRank,
+        youtube_url: obj.youtubeUrl,
+        twitch_url: obj.twitchUrl,
       };
     },
   };

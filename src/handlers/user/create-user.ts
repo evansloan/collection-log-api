@@ -18,15 +18,13 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     accountType,
     accountHash,
     isFemale,
-    userSettings,
+    userSettings: {
+      displayRank,
+      showQuantity,
+      youtubeUrl,
+      twitchUrl,
+    },
   } = body;
-
-  let displayRank = 'ALL';
-  let showQuantity = true;
-  if (userSettings) {
-    displayRank = userSettings.displayRank;
-    showQuantity = userSettings.showQuantity;
-  }
 
   const existingUser = await CollectionLogUser.query().findOne({ account_hash: accountHash });
   if (existingUser) {
@@ -37,6 +35,8 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
       isFemale,
       displayRank,
       showQuantity,
+      youtubeUrl,
+      twitchUrl,
     });
 
     return response(200, existingUser);
@@ -57,6 +57,8 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     isFemale,
     displayRank,
     showQuantity,
+    youtubeUrl,
+    twitchUrl,
   });
 
   return response(201, user);
