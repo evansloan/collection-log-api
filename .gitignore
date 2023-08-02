@@ -2,8 +2,18 @@
 node_modules
 .build
 .vscode
+.idea
 .env
 .env.local
 .env.dev
 .env.prod
 .DS_Store
+
+# yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
