@@ -1,2 +1,12 @@
 .build/
+.git/
+.idea/
 .serverless/
+.vscode/
+.yarn/
+node_modules/
+
+docker-compose.yml
+LICENCE
+README.md
+yarn-error.log
