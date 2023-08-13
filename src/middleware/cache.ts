@@ -31,4 +31,8 @@ class CacheMiddleware<T> implements middy.MiddlewareObj<APIGatewayProxyEventV2, 
   };
 }
 
+export const cache = <T>(cache: Cache<T>, param: string) => {
+  return new CacheMiddleware(cache, param);
+};
+
 export default CacheMiddleware;
