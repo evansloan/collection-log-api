@@ -1,7 +1,7 @@
-import RankCache from '@lib/cache/rank-cache';
-import CacheMiddleware from '@middleware/cache';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
+import RankCache from '@lib/cache/rank-cache';
+import { cache } from '@middleware/cache';
 import { middleware } from '@middleware/common';
 import { DatabaseContext } from '@middleware/database';
 import { CollectionLog, CollectionLogUser } from '@models/index';
@@ -81,4 +81,4 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
 };
 
 export const handler = middleware(getAccountTypeRanksByUsername)
-  .use(new CacheMiddleware(RankCache.getInstance(), 'username'));
+  .use(cache(RankCache.getInstance(), 'username'));
