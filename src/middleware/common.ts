@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import middy, {MiddyfiedHandler} from '@middy/core';
+import middy, { MiddyfiedHandler } from '@middy/core';
 import doNotWaitForEmptyEventLoop from '@middy/do-not-wait-for-empty-event-loop';
 
 import databaseMiddleWare from './database';
