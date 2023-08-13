@@ -1,7 +1,9 @@
+import CollectionLogCache from '@lib/cache/collection-log-cache';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
 import CollectionLogDao from '@dao/CollectionLogDao';
 import { middleware } from '@middleware/common';
+import CacheMiddleware from '@middleware/cache';
 import { errorResponse, response } from '@utils/handler-utils';
 
 const getByUsername: APIGatewayProxyHandlerV2 = async (event) => {
@@ -18,4 +20,5 @@ const getByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   return response(200, res);
 };
 
-export const handler = middleware(getByUsername);
+export const handler = middleware(getByUsername)
+  .use(new CacheMiddleware(CollectionLogCache.getInstance(), 'username'));

@@ -1,3 +1,5 @@
+import RankCache from '@lib/cache/rank-cache';
+import CacheMiddleware from '@middleware/cache';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
 import { middleware } from '@middleware/common';
@@ -14,7 +16,12 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
   const { database: db } = context as DatabaseContext;
   const paramsUsername = event.pathParameters?.username as string;
 
-  const allRanksQuery = db.select({ username: 'username', account_type: 'account_type' })
+  const selectAlias = {
+    username: 'username',
+    account_type: 'account_type',
+  };
+
+  const allRanksQuery = db.select(selectAlias)
     .rank('rank', (qb) => {
       qb.orderBy('unique_obtained', 'DESC')
         .orderBy('collection_log.updated_at', 'ASC');
@@ -25,7 +32,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .andWhere('collection_log.deleted_at', null)
     .andWhere('collection_log_user.deleted_at', null);
 
-  const accountTypeRanksQuery = db.select({ username: 'username', account_type: 'account_type' })
+  const accountTypeRanksQuery = db.select(selectAlias)
     .rank('rank', (qb) => {
       qb.orderBy('rank', 'ASC');
     })
@@ -73,4 +80,5 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
   return response(200, { accountTypeRanks: { ...ranks } });
 };
 
-export const handler = middleware(getAccountTypeRanksByUsername);
+export const handler = middleware(getAccountTypeRanksByUsername)
+  .use(new CacheMiddleware(RankCache.getInstance(), 'username'));
