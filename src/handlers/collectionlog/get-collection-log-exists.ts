@@ -1,16 +1,17 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
-import CollectionLogDao from '@dao/CollectionLogDao';
-import { middleware } from '@middleware/common';
+import { repositories } from '@middleware/common';
+import { RepositoryContext } from '@middleware/repository';
 import { response } from '@utils/handler-utils';
 
-const getCollectionLogExists: APIGatewayProxyHandlerV2 = async (event) => {
+const getCollectionLogExists: APIGatewayProxyHandlerV2 = async (event, context) => {
   const accountHash = event.pathParameters?.accountHash as string;
 
-  const collectionLog = await (new CollectionLogDao()).getByAccountHash(accountHash);
-  const exists = collectionLog ? true : false;
+  const { repositories: { clRepo } } = context as RepositoryContext;
+  const collectionLog = await clRepo.findByAccountHash(accountHash);
+  const exists = !!collectionLog;
 
   return response(200, { exists });
 };
 
-export const handler = middleware(getCollectionLogExists);
+export const handler = repositories(getCollectionLogExists);

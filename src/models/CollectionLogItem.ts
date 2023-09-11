@@ -82,8 +82,23 @@ export default class CollectionLogItem extends BaseModel {
     },
   });
 
-  static modifiers: Modifiers<AnyQueryBuilder> = {
+  static modifiers: Modifiers = {
     femaleItems: (query) => query.whereNotIn('item_id', CollectionLogItem.MALE_ITEMS),
     maleItems: (query) => query.whereNotIn('item_id', CollectionLogItem.FEMALE_ITEMS),
+    withRelated: (query, filterGender?: boolean, isFemale?: string) => {
+      query = query.withGraphJoined('page.[tab]')
+        .orderBy('page:tab.name', 'ASC')
+        .orderBy('page.name', 'ASC')
+        .orderBy('sequence', 'ASC');
+
+      if (filterGender) {
+        const genderModifier = isFemale ? CollectionLogItem.modifiers.femaleItems
+          : CollectionLogItem.modifiers.maleItems;
+
+        query = query.modify(genderModifier);
+      }
+
+      return query;
+    },
   };
 }

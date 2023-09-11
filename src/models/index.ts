@@ -3,7 +3,7 @@ import CollectionLogItem from '@models/CollectionLogItem';
 import CollectionLogKillCount from '@models/CollectionLogKillCount';
 import CollectionLogPage from '@models/CollectionLogPage';
 import CollectionLogTab from '@models/CollectionLogTab';
-import CollectionLogUser from '@models/CollectionlogUser';
+import CollectionLogUser from '@models/CollectionLogUser';
 
 export {
   CollectionLog,

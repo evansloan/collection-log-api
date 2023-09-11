@@ -1,14 +1,14 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { PartialModelObject } from 'objection';
 
-import CollectionLogDao from '@dao/CollectionLogDao';
 import { CollectionLogData } from '@datatypes/CollectionLogData';
-import { middleware } from '@middleware/common';
+import { repositories } from '@middleware/common';
+import { RepositoryContext } from '@middleware/repository';
 import { CollectionLog, CollectionLogUser } from '@models/index';
 import { LambdaService } from '@services/lambda';
 import { errorResponse, successResponse } from '@utils/handler-utils';
 
-const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
+const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event, context) => {
   const accountHash = event.pathParameters?.accountHash as string;
   const body = JSON.parse(event.body as string);
 
@@ -21,7 +21,9 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
     return errorResponse(400, 'Invalid request');
   }
 
-  let collectionLog = await new CollectionLogDao().getByAccountHash(accountHash);
+  const { repositories: { clRepo } } = context as RepositoryContext;
+
+  let collectionLog = await clRepo.findByAccountHash(accountHash);
 
   if (!collectionLog) {
     const user = await CollectionLogUser.query().findOne({ account_hash: accountHash });
@@ -65,4 +67,4 @@ const updateCollectionLog: APIGatewayProxyHandlerV2 = async (event) => {
   return successResponse(200, 'Collection log update in progress');
 };
 
-export const handler = middleware(updateCollectionLog);
+export const handler = repositories(updateCollectionLog);

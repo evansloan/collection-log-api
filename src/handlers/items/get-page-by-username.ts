@@ -1,16 +1,21 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { raw } from 'objection';
 
-import CollectionLogDao from '@dao/CollectionLogDao';
 import { middleware } from '@middleware/common';
-import { CollectionLogPage } from '@models/index';
+import {
+  CollectionLogRepository,
+  ItemsRepository,
+  KillCountsRepository, PagesRepository,
+} from '@repositories/index';
 import { errorResponse, response } from '@utils/handler-utils';
 
 const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   const paramsUsername = event.pathParameters?.username as string;
 
-  const clDao = new CollectionLogDao();
-  const collectionLog = await clDao.getByUsername(paramsUsername);
+  const clRepo = new CollectionLogRepository();
+  const itemsRepo = new ItemsRepository();
+  const kcRepo = new KillCountsRepository();
+
+  const collectionLog = await clRepo.findByUsername(paramsUsername);
 
   if (!collectionLog) {
     return errorResponse(404, `Collection log not found for user ${paramsUsername}`);
@@ -20,8 +25,7 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
   const offset: number|undefined = parseInt(event.queryStringParameters?.offset as string);
   const limit: number|undefined = parseInt(event.queryStringParameters?.limit as string);
 
-  const page = await CollectionLogPage.query()
-    .findOne(raw('LOWER(??)', 'name'), '=', pageName.toLowerCase());
+  const page = await (new PagesRepository()).findByName(pageName);
 
   if (!page) {
     return errorResponse(404, `Collection log page not found with name ${pageName}`);
@@ -35,7 +39,11 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
     obtainedAt: 'obtained_at',
     sequence: 'sequence',
   };
-  const items = await clDao.getItems(itemSelect, pageName, limit, offset);
+  const items = await itemsRepo.fetchPage(collectionLog, pageName, {
+    select: itemSelect,
+    limit,
+    offset,
+  });
   if (!items) {
     return errorResponse(404, `Unable to find items for user: ${paramsUsername} page: ${pageName}`);
   }
@@ -44,7 +52,11 @@ const getPageByUsername: APIGatewayProxyHandlerV2 = async (event) => {
     name: 'collection_log_kill_count.name',
     amount: 'amount',
   };
-  const killCount = await clDao.getKillCounts(kcSelect, pageName, limit, offset);
+  const killCount = await kcRepo.fetchPage(collectionLog, pageName, {
+    select: kcSelect,
+    limit,
+    offset,
+  });
 
   const res = {
     username: collectionLog.user.username,

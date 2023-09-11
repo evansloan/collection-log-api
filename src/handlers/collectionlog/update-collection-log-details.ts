@@ -1,3 +1,6 @@
+import CollectionLogRepository from '@repositories/collection-log';
+import { KillCountsRepository } from '@repositories/index';
+import ItemsRepository from '@repositories/items';
 import { Handler } from 'aws-lambda';
 import { PartialModelObject } from 'objection';
 import { v4 } from 'uuid';
@@ -47,9 +50,9 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
   console.log(`STARTING COLLECTION LOG DETAIL UPDATE FOR ${username}`);
 
-  const clDao = new CollectionLogDao();
+  const clRepo = new CollectionLogRepository();
 
-  const existingLog = await clDao.getByAccountHash(accountHash);
+  const existingLog = await clRepo.findByAccountHash(accountHash);
   if (!existingLog) {
     return errorResponse(404, 'Unable to find collection log to update');
   }
@@ -58,8 +61,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
 
   const collectionLogTabs = await CollectionLogTab.query();
   const collectionLogPages = await CollectionLogPage.query();
-  const existingItems = await clDao.getItemsWithRelated(false);
-  const existingKcs = await clDao.getKillCountsWithRelated();
+  const existingItems = await (new ItemsRepository()).fetchWithRelated(existingLog, false);
+  const existingKcs = await (new KillCountsRepository()).fetchWithRelated(existingLog);
   const itemsToUpdate: PartialModelObject<CollectionLogItem>[] = [];
   const kcsToUpdate: PartialModelObject<CollectionLogKillCount>[] = [];
 

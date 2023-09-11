@@ -1,4 +1,4 @@
-import { ColumnNameMappers, Model } from 'objection';
+import { ColumnNameMappers, Model, Modifiers } from 'objection';
 
 import { BaseModel } from './BaseModel';
 import { CollectionLog, CollectionLogPage } from '@models/index';
@@ -56,4 +56,15 @@ export default class CollectionLogKillCount extends BaseModel {
       },
     },
   });
+
+  static modifiers: Modifiers = {
+    withRelated: (query) => {
+      query = query.withGraphJoined('page.[tab]')
+        .orderBy('page:tab.name', 'ASC')
+        .orderBy('page.name', 'ASC')
+        .orderBy('sequence', 'ASC');
+
+      return query;
+    },
+  };
 }

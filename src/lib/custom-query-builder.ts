@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-import { Model, Page, PartialModelObject, QueryBuilder } from 'objection';
+import { Model, Page, PartialModelObject, QueryBuilder, raw } from 'objection';
 
 interface Options {
   columnName: string;
@@ -61,6 +61,11 @@ export class CustomQueryBuilder<M extends Model, R = M[]> extends QueryBuilder<M
 
   public visible(...visible: string) {
     this.context({ visible });
+    return this;
+  }
+
+  public whereLower(column: string, value: any): this {
+    this.where(raw('LOWER(??)', column), value);
     return this;
   }
 }

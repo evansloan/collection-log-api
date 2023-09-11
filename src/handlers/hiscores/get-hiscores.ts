@@ -25,6 +25,9 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
     total: 'unique_items',
   };
 
+  console.log(CollectionLogUser);
+  console.log(CollectionLog);
+
   let hiscoresQuery = db.select(selects)
     .rank('rank', (qb) => {
       qb.orderBy('unique_obtained', 'DESC')
