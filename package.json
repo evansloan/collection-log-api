@@ -1,48 +1,15 @@
 {
   "name": "collection-log-api",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.0.50",
   "scripts": {
-    "dev": "serverless offline start --noTimeout --stage=local --host=localhost --httpPort=3001 --useChildProcesses",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint {migrations,src}/**/*.{js,ts,tsx}",
-    "lint:fix": "eslint --fix {migrations,src}/**/*.{js,ts,tsx}",
-    "migrate:latest": "knex migrate:latest",
-    "seed": "yarn run knex seed:run"
-  },
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.81",
-    "@types/node": "^16.4.3",
-    "@typescript-eslint/eslint-plugin": "^5.27.1",
-    "@typescript-eslint/parser": "^5.27.1",
-    "eslint": "^8.17.0",
-    "eslint-import-resolver-typescript": "^2.7.1",
-    "eslint-plugin-import": "^2.26.0",
-    "serverless": "^2.52.1",
-    "serverless-domain-manager": "^5.2.0",
-    "serverless-offline": "^8.5.0",
-    "serverless-plugin-typescript": "^1.1.9",
-    "serverless-tscpaths": "^0.0.6",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^3.14.1",
-    "typescript": "^4.3.5"
+    "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "@middy/core": "^3.6.1",
-    "@middy/do-not-wait-for-empty-event-loop": "^3.6.1",
-    "@types/uuid": "^8.3.3",
-    "@types/validator": "^13.7.1",
-    "aws-lambda": "^1.0.6",
-    "aws-sdk": "^2.953.0",
-    "dotenv": "^16.0.0",
-    "knex": "^2.3.0",
-    "objection": "^3.0.1",
-    "pg": "^8.7.3",
-    "pg-hstore": "^2.3.4",
-    "reflect-metadata": "^0.1.13",
-    "uuid": "^8.3.2"
-  }
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
 }

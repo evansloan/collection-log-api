@@ -1,10 +1,10 @@
 version: '3.9'
 services:
   serverless:
-    container_name: serverless
+    container_name: server
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       network: 'host'
     ports:
       - '${PORT:-3001}:${PORT:-3001}'
