@@ -1,9 +1,10 @@
-FROM oven/bun:latest
+FROM --platform=linux/amd64 node:alpine
 
-WORKDIR /usr/local/app
+WORKDIR /usr/local/collection-log-api
 
 COPY . .
 
-RUN bun install
+RUN yarn install
+RUN yarn run prisma generate
 
-ENTRYPOINT ["bun", "run", "dev"]
+ENTRYPOINT ["yarn", "run", "start:dev"]

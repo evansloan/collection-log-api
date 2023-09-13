@@ -1,20 +1,20 @@
 version: '3.9'
 services:
-  serverless:
+  server:
     container_name: server
     build:
       context: .
       dockerfile: Dockerfile
       network: 'host'
     ports:
-      - '${PORT:-3001}:${PORT:-3001}'
+      - '${PORT:-3000}:${PORT:-3000}'
     depends_on:
       - db
     env_file:
       - .env
     volumes:
-      - .:/usr/local/app
-      - /usr/local/app/node_modules
+      - .:/usr/local/collection-log-api
+      - /usr/local/collection-log-api/node_modules
 
   db:
     container_name: postgres

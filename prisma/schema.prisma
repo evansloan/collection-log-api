@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CollectionLog {
+  id             String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId         String                   @map("user_id") @db.Uuid
+  uniqueObtained Int?                     @default(0) @map("unique_obtained")
+  uniqueItems    Int?                     @default(0) @map("unique_items")
+  totalObtained  Int?                     @default(0) @map("total_obtained")
+  totalItems     Int?                     @default(0) @map("total_items")
+  createdAt      DateTime?                @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime?                @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?                @map("deleted_at") @db.Timestamptz(6)
+  isUpdating     Boolean?                 @default(false) @map("is_updating")
+  user           CollectionLogUser        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_user_id_foreign")
+  items          CollectionLogItem[]
+  killCounts     CollectionLogKillCount[]
+
+  @@map("collection_log")
+}
+
+model CollectionLogPage {
+  id         String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tabId      String                   @map("collection_log_tab_id") @db.Uuid
+  name       String                   @db.VarChar(255)
+  createdAt  DateTime?                @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime?                @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?                @map("deleted_at") @db.Timestamptz(6)
+  tab        CollectionLogTab         @relation(fields: [tabId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_entry_collection_log_tab_id_foreign")
+  items      CollectionLogItem[]
+  killCounts CollectionLogKillCount[]
+
+  @@map("collection_log_entry")
+}
+
+model CollectionLogItem {
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  collectionLogId String            @map("collection_log_id") @db.Uuid
+  pageId          String            @map("collection_log_entry_id") @db.Uuid
+  name            String            @db.VarChar(255)
+  itemId          Int               @map("item_id")
+  quantity        Int?              @default(0)
+  obtained        Boolean?          @default(false)
+  sequence        Int
+  obtainedAt      DateTime?         @map("obtained_at") @db.Timestamptz(6)
+  createdAt       DateTime?         @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime?         @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  page            CollectionLogPage @relation(fields: [pageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_item_collection_log_entry_id_foreign")
+  collectionLog   CollectionLog     @relation(fields: [collectionLogId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_item_collection_log_id_foreign")
+
+  @@index([pageId, collectionLogId], map: "collection_log_item_collection_log_entry_id_collection_log_id_i")
+  @@index([collectionLogId], map: "collection_log_item_collection_log_id_index")
+  @@map("collection_log_item")
+}
+
+model CollectionLogKillCount {
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  collectionLogId String            @map("collection_log_id") @db.Uuid
+  pageId          String            @map("collection_log_entry_id") @db.Uuid
+  name            String            @db.VarChar(255)
+  amount          Int?              @default(0)
+  createdAt       DateTime?         @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime?         @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  sequence        Int?              @default(0)
+  page            CollectionLogPage @relation(fields: [pageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_kill_count_collection_log_entry_id_foreign")
+  collectionLog   CollectionLog     @relation(fields: [collectionLogId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "collection_log_kill_count_collection_log_id_foreign")
+
+  @@index([pageId, collectionLogId], map: "collection_log_kill_count_collection_log_entry_id_collection_lo")
+  @@map("collection_log_kill_count")
+}
+
+model CollectionLogTab {
+  id        String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String              @db.VarChar(255)
+  createdAt DateTime?           @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime?           @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  pages     CollectionLogPage[]
+
+  @@map("collection_log_tab")
+}
+
+model CollectionLogUser {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  username      String          @db.VarChar(255)
+  accountType   String?         @map("account_type") @db.VarChar(255)
+  runeliteId    String?         @map("runelite_id") @db.VarChar(255)
+  createdAt     DateTime?       @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime?       @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  isFemale      Boolean?        @default(false) @map("is_female")
+  accountHash   String?         @map("account_hash") @db.VarChar(255)
+  isBanned      Boolean?        @default(false) @map("is_banned")
+  showQuantity  Boolean?        @default(true) @map("show_quantity")
+  displayRank   String?         @default("ALL") @map("display_rank") @db.VarChar(255)
+  collectionLog CollectionLog[]
+
+  @@map("collection_log_user")
+}
+
+model RecentObtainedItems {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  username   String   @db.VarChar(255)
+  name       String   @db.VarChar(255)
+  itemId     Int      @map("item_id")
+  quantity   Int?     @default(0)
+  obtained   Boolean? @default(false)
+  obtainedAt DateTime @map("obtained_at") @db.Timestamptz(6)
+
+  @@map("recent_obtained_items")
+}
