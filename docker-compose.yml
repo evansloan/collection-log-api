@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       network: 'host'
     ports:
-      - '${PORT:-3000}:${PORT:-3000}'
+      - '${SERVER_PORT:-3000}:${SERVER_PORT:-3000}'
     depends_on:
       - db
     env_file:

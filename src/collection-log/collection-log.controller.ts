@@ -2,7 +2,7 @@ import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 
 import { CollectionLogService, FullCollectionLog } from './collection-log.service';
 
-@Controller('collectionlog')
+@Controller(['collection-log', 'collectionlog'])
 export class CollectionLogController {
   constructor(private readonly collectionLogService: CollectionLogService) {}
 
