@@ -3,6 +3,7 @@ import { CollectionLog, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma.service';
 import { PageService } from '../page/page.service';
+import { TabService } from '../tab/tab.service';
 
 type CollectionLogWithItems = Prisma.CollectionLogGetPayload<{
   include: {
@@ -44,7 +45,8 @@ export class CollectionLogService {
 
   constructor(
     private prisma: PrismaService,
-    private pageService: PageService
+    private pageService: PageService,
+    private tabService: TabService
   ) {}
 
   async one(
@@ -132,10 +134,8 @@ export class CollectionLogService {
       user,
     } = collectionLog;
 
-    const collectionLogPages = await this.pageService.all();
-    const collectionLogTabs = await this.prisma.collectionLogTab.findMany({
-      where: { deletedAt: null },
-    });
+    const collectionLogPages = await this.pageService.all({ where: { deletedAt: null } });
+    const collectionLogTabs = await this.tabService.all({ where: { deletedAt: null } });
 
     const formatted: any = {
       collectionLogId: collectionLog.id,
