@@ -6,6 +6,7 @@ import { PrismaService } from './prisma.service';
 import { ItemController } from './item/item.controller';
 import { ItemService } from './item/item.service';
 import { PageService } from './page/page.service';
+import { TabService } from './tab/tab.service';
 
 @Module({
   imports: [],
@@ -18,6 +19,7 @@ import { PageService } from './page/page.service';
     ItemService,
     PageService,
     PrismaService,
+    TabService,
   ],
 })
 export class AppModule {}
