@@ -1,6 +1,6 @@
 import { ScheduledHandler } from 'aws-lambda';
 
-import { CollectionLog, CollectionLogItem, CollectionLogUser } from '@models/index';
+import { CollectionLogUser } from '@models/index';
 import { DatabaseService } from '@services/database';
 
 const buildRecentGlobal: ScheduledHandler = async (event, context) => {
@@ -12,6 +12,7 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
   const previousRecords = await db.select('id').from('recent_obtained_items');
 
   const select = {
+    username: 'username',
     name: 'name',
     quantity: 'quantity',
     obtained: 'obtained',
@@ -19,30 +20,13 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
     item_id: 'item_id',
   };
 
-  const allItemsQuery = db.select({ ...select, collection_log_id: 'collection_log_id' })
-    .rowNumber('index', (qb) => {
-      qb.partitionBy('collection_log_id')
-        .orderBy('obtained_at', 'DESC')
-        .orderBy('name', 'ASC');
-    })
-    .from(CollectionLogItem.tableName)
-    .where({
-      obtained: true,
-      deleted_at: null,
-    })
-    // eslint-disable-next-line quotes
-    .andWhereRaw("obtained_at >= NOW() - INTERVAL '12 HOURS'");
-
   console.log('FETCHING RECENT GLOBAL OBTAINED ITEMS');
-  const items = await db.with('items', allItemsQuery)
-    .select({ ...select, username: 'username' })
-    .from('items')
-    .join(CollectionLog.tableName, 'collection_log.id', '=', 'items.collection_log_id')
-    .join(CollectionLogUser.tableName, 'collection_log_user.id', '=', 'collection_log.user_id')
-    .where('index', 1)
-    .andWhere('collection_log.deleted_at', null)
+  const items = await db.select(select)
+    .from(CollectionLogUser.tableName)
+    .join('collection_log_item', 'collection_log_item.id', '=', 'collection_log_user.obtained_collection_log_item_id')
+    .where('collection_log_item.obtained', true)
     .andWhere('collection_log_user.deleted_at', null)
-    .orderBy('items.obtained_at', 'DESC')
+    .orderBy('collection_log_user.recent_obtained_date', 'desc')
     .limit(30);
 
   console.log('INSERTING RECENT GLOBAL ITEMS');
