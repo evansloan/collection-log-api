@@ -93,6 +93,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
       const pageData = logData.tabs[tabName][pageName];
       const itemData = pageData.items;
       const killCountData = pageData.killCounts;
+
       itemData.forEach((item, i) => {
         const { id: itemId, name, quantity, obtained } = item;
 
@@ -142,6 +143,8 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
         let obtainedAt = existingItem?.obtainedAt;
         if (newObtained && !obtainedAt) {
           obtainedAt = new Date();
+          existingLog.user.recentObtainedDate = obtainedAt;
+          existingLog.user.obtainedCollectionLogItemId = dbId;
         }
 
         if (shouldUpdate) {
@@ -222,6 +225,7 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
   }
 
   await existingLog.$query().update({ isUpdating: false });
+  await existingLog.user.$query().update({ ...existingLog.user });
 
   return successResponse(200, `Collection log detail update for ${username} successful`);
 };
