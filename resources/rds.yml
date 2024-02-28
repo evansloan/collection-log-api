@@ -8,8 +8,8 @@ Resources:
       MasterUserPassword: !Sub ${env:DB_PASS}
       Engine: postgres
       EngineVersion: 12.5
-      DBInstanceClass: db.t2.small
-      AllocatedStorage: 20
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: 120
       PubliclyAccessible: false
       DBSubnetGroupName: !Ref RDSSubnetGroup
       VPCSecurityGroups: 
