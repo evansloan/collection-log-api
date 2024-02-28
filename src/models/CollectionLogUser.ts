@@ -11,6 +11,8 @@ export default class CollectionLogUser extends BaseModel {
   isFemale!: boolean;
   showQuantity!: boolean;
   displayRank!: string;
+  recentObtainedDate?: Date;
+  obtainedCollectionLogItemId?: string;
 
   collectionLog?: CollectionLog;
 
@@ -31,6 +33,8 @@ export default class CollectionLogUser extends BaseModel {
         isFemale: obj.is_female,
         showQuantity: obj.show_quantity,
         displayRank: obj.display_rank,
+        recentObtainedDate: obj.recent_obtained_date,
+        obtainedCollectionLogItemId: obj.obtained_collection_log_item_id,
       };
     },
     format(obj) {
@@ -43,6 +47,8 @@ export default class CollectionLogUser extends BaseModel {
         is_female: obj.isFemale,
         show_quantity: obj.showQuantity,
         display_rank: obj.displayRank,
+        recent_obtained_date: obj.recentObtainedDate,
+        obtained_collection_log_item_id: obj.obtainedCollectionLogItemId,
       };
     },
   };
