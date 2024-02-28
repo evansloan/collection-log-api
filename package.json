@@ -9,7 +9,7 @@
     "lint": "eslint {migrations,src}/**/*.{js,ts,tsx}",
     "lint:fix": "eslint --fix {migrations,src}/**/*.{js,ts,tsx}",
     "migrate:latest": "knex migrate:latest",
-    "seed": "knex seed:run"
+    "seed": "yarn run knex seed:run"
   },
   "author": "",
   "license": "MIT",

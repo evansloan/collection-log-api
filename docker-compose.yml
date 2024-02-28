@@ -1,17 +1,20 @@
 version: '3.9'
 services:
-  api:
-    container_name: api
-    restart: always
+  serverless:
+    container_name: serverless
     build:
       context: .
+      dockerfile: docker/Dockerfile
       network: 'host'
     ports:
-      - '${API_PORT:-3001}:${API_PORT:-3001}'
+      - '${PORT:-3001}:${PORT:-3001}'
     depends_on:
       - db
+    env_file:
+      - .env
     volumes:
-      - .:/usr/src/app
+      - .:/usr/local/app
+      - /usr/local/app/node_modules
 
   db:
     container_name: postgres
