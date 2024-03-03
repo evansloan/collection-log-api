@@ -41,6 +41,8 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .whereIn('account_type', GROUP_IRONMAN_TYPES);
   const hcGimRanksQuery = accountTypeRanksQuery.clone()
     .where({ account_type: AccountType.HARDCORE_GROUP_IRONMAN });
+  const urGimRanksQuery = accountTypeRanksQuery.clone()
+    .where({ account_type: AccountType.UNRANKED_GROUP_IRONMAN });
   const normalRanksQuery = accountTypeRanksQuery.clone()
     .where({ account_type: AccountType.NORMAL });
 
@@ -50,6 +52,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .with('ult_ironman_ranks', ultIronmanRanksQuery)
     .with('gim_ranks', gimRanksQuery)
     .with('hc_gim_ranks', hcGimRanksQuery)
+    .with('ur_gim_ranks', urGimRanksQuery)
     .with('normal_ranks', normalRanksQuery)
     .select({
       ALL: 'all_ranks.rank',
@@ -58,6 +61,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
       [AccountType.ULTIMATE_IRONMAN]: 'ult_ironman_ranks.rank',
       [AccountType.GROUP_IRONMAN]: 'gim_ranks.rank',
       [AccountType.HARDCORE_GROUP_IRONMAN]: 'hc_gim_ranks.rank',
+      [AccountType.UNRANKED_GROUP_IRONMAN]: 'ur_gim_ranks.rank',
       [AccountType.NORMAL]: 'normal_ranks.rank',
     })
     .from('all_ranks')
@@ -66,6 +70,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
     .leftJoin('ult_ironman_ranks', 'ult_ironman_ranks.username', 'all_ranks.username')
     .leftJoin('gim_ranks', 'gim_ranks.username', 'all_ranks.username')
     .leftJoin('hc_gim_ranks', 'hc_gim_ranks.username', 'all_ranks.username')
+    .leftJoin('ur_gim_ranks', 'ur_gim_ranks.username', 'all_ranks.username')
     .leftJoin('normal_ranks', 'normal_ranks.username', 'all_ranks.username')
     .whereRaw('LOWER(all_ranks.username) = ?', [paramsUsername.toLowerCase()])
     .first();
