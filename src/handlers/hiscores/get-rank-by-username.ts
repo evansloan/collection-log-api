@@ -14,7 +14,7 @@ const getRankByUsername: APIGatewayProxyHandlerV2 = async (event, context) => {
   let userRanksQuery = db.select({ username: 'username' })
     .rank('rank', (qb) => {
       qb.orderBy('unique_obtained', 'DESC')
-        .orderBy('collection_log.updated_at', 'ASC');
+        .orderBy('recent_obtained_date', 'ASC');
     })
     .from(CollectionLogUser.tableName)
     .join(CollectionLog.tableName, 'collection_log.user_id', '=', 'collection_log_user.id')

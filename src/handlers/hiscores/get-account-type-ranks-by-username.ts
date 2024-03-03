@@ -17,7 +17,7 @@ const getAccountTypeRanksByUsername: APIGatewayProxyHandlerV2 = async (event, co
   const allRanksQuery = db.select({ username: 'username', account_type: 'account_type' })
     .rank('rank', (qb) => {
       qb.orderBy('unique_obtained', 'DESC')
-        .orderBy('collection_log.updated_at', 'ASC');
+        .orderBy('recent_obtained_date', 'ASC');
     })
     .from(CollectionLogUser.tableName)
     .join(CollectionLog.tableName, 'collection_log.user_id', '=', 'collection_log_user.id')
