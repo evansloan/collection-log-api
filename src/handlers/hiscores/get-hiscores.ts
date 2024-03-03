@@ -36,6 +36,7 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
     .andWhere('collection_log.deleted_at', null) // Using the base knex querybuilder, have to specify null delete records
     .andWhere('collection_log_user.deleted_at', null)
     .orderBy('unique_obtained', 'DESC')
+    .orderBy('recent_obtained_date', 'ASC')
     .limit(limit)
     .offset(offset);
 
