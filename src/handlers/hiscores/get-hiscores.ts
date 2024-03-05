@@ -28,7 +28,7 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
   let hiscoresQuery = db.select(selects)
     .rank('rank', (qb) => {
       qb.orderBy('unique_obtained', 'DESC')
-        .orderBy('collection_log.updated_at', 'ASC');
+        .orderBy('recent_obtained_date', 'ASC');
     })
     .from(CollectionLogUser.tableName)
     .join(CollectionLog.tableName, 'collection_log.user_id', '=', 'collection_log_user.id')
@@ -36,7 +36,6 @@ const getHiscores: APIGatewayProxyHandlerV2 = async (event, context) => {
     .andWhere('collection_log.deleted_at', null) // Using the base knex querybuilder, have to specify null delete records
     .andWhere('collection_log_user.deleted_at', null)
     .orderBy('unique_obtained', 'DESC')
-    .orderBy('recent_obtained_date', 'ASC')
     .limit(limit)
     .offset(offset);
 
