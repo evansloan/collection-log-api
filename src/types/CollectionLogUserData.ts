@@ -17,7 +17,6 @@ export const IRONMAN_TYPES = [
 export const GROUP_IRONMAN_TYPES = [
   AccountType.GROUP_IRONMAN,
   AccountType.HARDCORE_GROUP_IRONMAN,
-  AccountType.UNRANKED_GROUP_IRONMAN,
 ];
 
 export interface CollectionLogUserData {
