@@ -31,6 +31,17 @@ const INVALID_PAGES: string[] = [
 ];
 
 /**
+ * Item ID map to find existing items with a different ID that are
+ * the same item.
+ */
+const ITEM_ID_MAPPINGS: { [key: number]: number } = {
+  29472: 12013, // Prospector hat
+  29474: 12014, // Prospector top
+  29476: 12015, // Propector legs
+  29478: 12016, // Prospector boots
+};
+
+/**
  * Lambda function to handle updating items and kill counts.
  *
  * Logic exists in it's own lambda due to hard 30 second timeout
@@ -126,6 +137,19 @@ const updateCollectionLogDetails: Handler = async (event: ItemUpdateEvent) => {
           existingItem = existingItems?.find((existingItem) => {
             return existingItem.itemId == itemId;
           });
+        }
+
+        /**
+         * Check if item was assigned a new item id by checking ITEM_ID_MAPPINGS
+         * Only current scenario this applies to is prospectors outfit in motherlode mine and volacanic mine
+         */
+        if (!existingItem) {
+          const newId = ITEM_ID_MAPPINGS[itemId];
+          if (newId) {
+            existingItem = existingItems?.find((existingItem) => (
+              existingItem.itemId == newId
+            ));
+          }
         }
 
         const newItem = existingItem?.id != dbId;
