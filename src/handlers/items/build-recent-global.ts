@@ -1,6 +1,6 @@
 import { ScheduledHandler } from 'aws-lambda';
 
-import { CollectionLogUser } from '@models/index';
+import { CollectionLogItem, CollectionLogUser } from '@models/index';
 import { DatabaseService } from '@services/database';
 
 const buildRecentGlobal: ScheduledHandler = async (event, context) => {
@@ -8,8 +8,22 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
 
   const dbService = new DatabaseService();
   const db = dbService.getConnection();
-
   const previousRecords = await db.select('id').from('recent_obtained_items');
+
+  console.log('FETCHING RECENT GLOBAL OBTAINED ITEMS');
+
+  const recentObtainedUsersCTE = 'recent_obtained_users';
+  const userSelect = {
+    username: 'username',
+    recent_obtained_date: 'recent_obtained_date',
+    obtained_collection_log_item_id: 'obtained_collection_log_item_id',
+  };
+  const recentObtainedUsers = db.select(userSelect)
+    .from(CollectionLogUser.tableName)
+    .where({ deleted_at: null })
+    .andWhereNot({ recent_obtained_date: null })
+    .orderBy('recent_obtained_date', 'DESC')
+    .limit(30);
 
   const select = {
     username: 'username',
@@ -19,18 +33,14 @@ const buildRecentGlobal: ScheduledHandler = async (event, context) => {
     obtained_at: 'obtained_at',
     item_id: 'item_id',
   };
-
-  console.log('FETCHING RECENT GLOBAL OBTAINED ITEMS');
-  const items = await db.select(select)
-    .from(CollectionLogUser.tableName)
-    .join('collection_log_item', 'collection_log_item.id', '=', 'collection_log_user.obtained_collection_log_item_id')
-    .where('collection_log_item.obtained', true)
-    .andWhere('collection_log_user.deleted_at', null)
-    .orderBy('collection_log_user.recent_obtained_date', 'desc')
-    .limit(30);
+  const recentItems = await db.with(recentObtainedUsersCTE, recentObtainedUsers)
+    .select(select)
+    .from(recentObtainedUsersCTE)
+    .join(CollectionLogItem.tableName, `${CollectionLogItem.tableName}.id`, '=', `${recentObtainedUsersCTE}.obtained_collection_log_item_id`)
+    .where(`${CollectionLogItem.tableName}.obtained`, true);
 
   console.log('INSERTING RECENT GLOBAL ITEMS');
-  await db.insert(items).into('recent_obtained_items');
+  await db.insert(recentItems).into('recent_obtained_items');
 
   if (previousRecords.length > 0) {
     console.log('DELETING PREVIOUS RECENT GLOBAL OBTAINED ITEMS');
