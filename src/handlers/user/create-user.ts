@@ -42,8 +42,21 @@ const create: APIGatewayProxyHandlerV2 = async (event) => {
     return response(200, existingUser);
   }
 
-  const userExistsWithName = await CollectionLogUser.query().findOne({ username }) != undefined;
-  if (userExistsWithName) {
+  const existingUsername = await CollectionLogUser.query().findOne({ username: username });
+  if (existingUsername && existingUsername.forceUpdate) {
+    console.log(`EXISTING USER FOR ${username} FOUND MARKED FOR FORCED UPDATE. STARTING USER UPDATE`);
+    await existingUsername.$query().update({
+      username,
+      accountType,
+      isFemale,
+      displayRank,
+      showQuantity,
+    });
+
+    return response(200, existingUsername);
+  }
+
+  if (existingUsername) {
     console.log(`EXISTING USER FOR ${username} FOUND. ACCOUNT HASH MISMATCH`);
     return errorResponse(401, `Invalid account hash for user ${username}`);
   }

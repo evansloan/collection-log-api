@@ -13,6 +13,7 @@ export default class CollectionLogUser extends BaseModel {
   displayRank!: string;
   recentObtainedDate?: Date;
   obtainedCollectionLogItemId?: string;
+  forceUpdate!: boolean;
 
   collectionLog?: CollectionLog;
 
